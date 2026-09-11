@@ -1,5 +1,5 @@
 export function adminApi(path: string): string {
-  const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+  const base = process.env.NEXT_PUBLIC_API_URL;
   return `${base.replace(/\/$/, "")}${path}`;
 }
 
