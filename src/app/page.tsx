@@ -1,4 +1,5 @@
 import { STATUS_SITE_URL } from "@/lib/site";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -10,14 +11,28 @@ export default function Home() {
         Nursing Edge Admin
       </h1>
       <p className="mt-4 max-w-xl text-base leading-7 text-[#24313A]">
-        This console will inspect learner evidence, content, Review, and
-        imports. Sign-in and admin views are not built yet.
+        Authorized operators use this console. Register, then sign in. Super
+        Admin is created from the configured backend email.
+      </p>
+      <p className="mt-6 flex flex-wrap gap-3">
+        <Link
+          href="/register"
+          className="inline-flex min-h-[48px] items-center rounded-[10px] bg-[#0B7F86] px-5 text-base font-medium text-white hover:bg-[#08666C]"
+        >
+          Register
+        </Link>
+        <Link
+          href="/signin"
+          className="inline-flex min-h-[48px] items-center rounded-[10px] border border-[#D9E1E5] bg-white px-5 text-base font-medium text-[#163A59]"
+        >
+          Sign in
+        </Link>
       </p>
       {STATUS_SITE_URL ? (
         <p className="mt-6">
           <a
             href={STATUS_SITE_URL}
-            className="inline-flex min-h-[48px] items-center rounded-[10px] bg-[#0B7F86] px-5 text-base font-medium text-white hover:bg-[#08666C]"
+            className="text-base font-medium text-[#0B7F86] underline"
           >
             View status and changelog
           </a>
