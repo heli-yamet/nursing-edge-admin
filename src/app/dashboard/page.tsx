@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SignOutButton } from "@/components/SignOutButton";
 import { adminApi } from "@/lib/site";
@@ -33,7 +34,19 @@ export default async function DashboardPage() {
         Dashboard
       </h1>
       <p className="mt-4 text-base leading-7 text-[#24313A]">
-        Signed in as {admin.email}. Console views are not built yet.
+        Signed in as {admin.email}.
+      </p>
+      <p className="mt-6">
+        <Link
+          href="/dashboard/imports"
+          className="inline-flex min-h-[48px] items-center rounded-[10px] bg-[#0B7F86] px-5 text-base font-medium text-white hover:bg-[#08666C]"
+        >
+          Content Imports
+        </Link>
+      </p>
+      <p className="mt-4 text-base leading-7 text-[#66727A]">
+        Other console views are not built yet. Publish is not available on this
+        screen.
       </p>
       <SignOutButton />
     </main>
