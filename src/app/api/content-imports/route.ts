@@ -4,7 +4,7 @@ import { Agent, fetch, FormData as UndiciFormData } from "undici";
 import { adminApi } from "@/lib/site";
 
 export const runtime = "nodejs";
-export const maxDuration = 900;
+export const maxDuration = 120;
 
 const importAgent = new Agent({
   headersTimeout: 15 * 60 * 1000,
