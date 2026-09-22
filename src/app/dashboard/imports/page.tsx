@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ContentImportForm } from "@/components/ContentImportForm";
+import { ImportedQuestionsTable } from "@/components/ImportedQuestionsTable";
+import { PriorBatches } from "@/components/PriorBatches";
 import { SignOutButton } from "@/components/SignOutButton";
 import { adminApi } from "@/lib/site";
 
@@ -13,6 +15,14 @@ type ImportBatch = {
   passed_count: number;
   failed_count: number;
   unchanged_count: number;
+};
+
+type ImportedQuestion = {
+  question_id: string;
+  question_version_id: string;
+  workbook_row: string;
+  format: string;
+  publication_status: "STAGED" | "PUBLISHED";
 };
 
 export default async function ContentImportsPage() {
@@ -37,8 +47,10 @@ export default async function ContentImportsPage() {
   const list = (await listResponse.json()) as {
     ok?: boolean;
     batches?: ImportBatch[];
+    questions?: ImportedQuestion[];
   };
   const batches = list.ok ? (list.batches ?? []) : [];
+  const questions = list.ok ? (list.questions ?? []) : [];
 
   return (
     <main className="mx-auto w-full max-w-[960px] px-5 py-12 sm:px-6 sm:py-16">
@@ -55,22 +67,8 @@ export default async function ContentImportsPage() {
         stay failed. Nothing is published from this screen.
       </p>
       <ContentImportForm />
-      {batches.length > 0 ? (
-        <section className="mt-12">
-          <h2 className="text-xl font-semibold text-[#163A59]">Prior batches</h2>
-          <ul className="mt-4 space-y-3">
-            {batches.map((batch) => (
-              <li
-                key={batch.batch_id}
-                className="rounded-[10px] border border-[#D9E1E5] bg-white px-4 py-3 text-base leading-7 text-[#24313A]"
-              >
-                {batch.source}: {batch.passed_count} passed, {batch.failed_count}{" "}
-                failed, {batch.unchanged_count} unchanged of {batch.line_count}.
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+      <ImportedQuestionsTable questions={questions} />
+      <PriorBatches batches={batches} />
       <SignOutButton />
     </main>
   );
