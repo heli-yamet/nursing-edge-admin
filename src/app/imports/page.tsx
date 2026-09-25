@@ -63,8 +63,8 @@ export default async function ContentImportsPage() {
         Content Imports
       </h1>
       <p className="mt-4 max-w-2xl text-base leading-7 text-[#24313A]">
-        Upload a C2 workbook. Each question is validated and staged. Failed rows
-        stay failed. Nothing is published from this screen.
+        Upload a C2 workbook. Each question is validated and staged. Select
+        staged versions to publish. Learners still do not see questions.
       </p>
       <ContentImportForm />
       <ImportedQuestionsTable questions={questions} />
