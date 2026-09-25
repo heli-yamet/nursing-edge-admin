@@ -36,14 +36,20 @@ export default async function DashboardPage() {
       <p className="mt-4 text-base leading-7 text-[#24313A]">
         Signed in as {admin.email}.
       </p>
-      <p className="mt-6">
+      <div className="mt-6 flex flex-wrap gap-3">
         <Link
-          href="/dashboard/imports"
+          href="/access"
           className="inline-flex min-h-[48px] items-center rounded-[10px] bg-[#0B7F86] px-5 text-base font-medium text-white hover:bg-[#08666C]"
+        >
+          Manual access
+        </Link>
+        <Link
+          href="/imports"
+          className="inline-flex min-h-[48px] items-center rounded-[10px] border border-[#D9E1E5] bg-white px-5 text-base font-medium text-[#163A59]"
         >
           Content Imports
         </Link>
-      </p>
+      </div>
       <p className="mt-4 text-base leading-7 text-[#66727A]">
         Other console views are not built yet. Publish is not available on this
         screen.
