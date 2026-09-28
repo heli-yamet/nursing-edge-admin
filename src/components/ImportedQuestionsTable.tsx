@@ -9,23 +9,31 @@ type ImportedQuestion = {
   workbook_row: string;
   format: string;
   publication_status: "STAGED" | "PUBLISHED";
+  active?: boolean;
 };
 
-type PublishLine = {
+type ActionLine = {
   question_version_id: string;
-  outcome: "PUBLISHED" | "REJECTED";
+  outcome: "PUBLISHED" | "PAUSED" | "REJECTED";
   reason: string | null;
 };
 
-type PublishResponse = {
+type ActionResponse = {
   ok?: boolean;
   reason?: string | null;
   error?: string;
-  lines?: PublishLine[];
+  lines?: ActionLine[];
 };
 
-function statusLabel(status: ImportedQuestion["publication_status"]): string {
-  return status === "PUBLISHED" ? "Published" : "Staged";
+function isPauseable(question: ImportedQuestion): boolean {
+  return question.publication_status === "PUBLISHED" && question.active !== false;
+}
+
+function statusLabel(question: ImportedQuestion): string {
+  if (question.publication_status === "STAGED") {
+    return "Staged";
+  }
+  return question.active === false ? "Paused" : "Published";
 }
 
 export function ImportedQuestionsTable({
@@ -37,12 +45,19 @@ export function ImportedQuestionsTable({
   const [selected, setSelected] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
-  const [lines, setLines] = useState<PublishLine[]>([]);
+  const [lines, setLines] = useState<ActionLine[]>([]);
 
   const stagedIds = useMemo(
     () =>
       questions
         .filter((question) => question.publication_status === "STAGED")
+        .map((question) => question.question_version_id),
+    [questions],
+  );
+  const pauseableIds = useMemo(
+    () =>
+      questions
+        .filter((question) => isPauseable(question))
         .map((question) => question.question_version_id),
     [questions],
   );
@@ -52,6 +67,9 @@ export function ImportedQuestionsTable({
   );
   const allStagedSelected =
     stagedIds.length > 0 && stagedIds.every((id) => selected.includes(id));
+  const allPauseableSelected =
+    pauseableIds.length > 0 &&
+    pauseableIds.every((id) => selected.includes(id));
 
   if (questions.length === 0) {
     return null;
@@ -64,27 +82,50 @@ export function ImportedQuestionsTable({
   }
 
   function toggleAllStaged() {
-    setSelected(allStagedSelected ? [] : stagedIds);
+    setSelected((current) => {
+      if (allStagedSelected) {
+        return current.filter((id) => !stagedIds.includes(id));
+      }
+      return [...new Set([...current, ...stagedIds])];
+    });
   }
 
-  async function publish() {
+  function toggleAllPauseable() {
+    setSelected((current) => {
+      if (allPauseableSelected) {
+        return current.filter((id) => !pauseableIds.includes(id));
+      }
+      return [...new Set([...current, ...pauseableIds])];
+    });
+  }
+
+  async function postAction(
+    path: string,
+    ids: string[],
+    successMessage: string,
+    emptyMessage: string,
+  ) {
+    if (ids.length === 0) {
+      setMessage(emptyMessage);
+      return;
+    }
     setBusy(true);
     setMessage("");
     try {
-      const response = await fetch("/api/question-publishes", {
+      const response = await fetch(path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question_version_ids: selected }),
+        body: JSON.stringify({ question_version_ids: ids }),
       });
-      const payload = (await response.json()) as PublishResponse;
+      const payload = (await response.json()) as ActionResponse;
       setLines(payload.lines ?? []);
       if (payload.ok) {
-        setMessage("Selected questions are published. Learners still do not see them.");
+        setMessage(successMessage);
         setSelected([]);
         router.refresh();
         return;
       }
-      setMessage(payload.reason ?? payload.error ?? "Nothing was published.");
+      setMessage(payload.reason ?? payload.error ?? emptyMessage);
     } catch {
       setMessage("Could not reach the server. Try again.");
     } finally {
@@ -92,22 +133,50 @@ export function ImportedQuestionsTable({
     }
   }
 
+  async function publish() {
+    await postAction(
+      "/api/question-publishes",
+      selected.filter((id) => stagedIds.includes(id)),
+      "Selected questions are published. Learners still do not see them.",
+      "Nothing was published.",
+    );
+  }
+
+  async function pause() {
+    await postAction(
+      "/api/question-pauses",
+      selected.filter((id) => pauseableIds.includes(id)),
+      "Selected questions are paused. They are no longer eligible. Learners still do not see them.",
+      "Nothing was paused.",
+    );
+  }
+
   return (
     <section className="mt-10">
       <h2 className="text-xl font-semibold text-[#163A59]">Imported questions</h2>
       <p className="mt-2 text-base leading-7 text-[#24313A]">
         {questions.length} question {questions.length === 1 ? "version" : "versions"}{" "}
-        in the bank. Select staged versions to publish. Learners still do not see
-        questions.
+        in the bank. Select staged versions to publish, or published versions to
+        pause. Learners still do not see questions.
       </p>
-      <button
-        type="button"
-        disabled={busy || selected.length === 0}
-        onClick={() => void publish()}
-        className="mt-4 inline-flex min-h-[48px] items-center rounded-[10px] bg-[#0B7F86] px-5 text-base font-medium text-white hover:bg-[#08666C] disabled:opacity-60"
-      >
-        {busy ? "Publishing…" : "Publish selected"}
-      </button>
+      <div className="mt-4 flex flex-wrap gap-3">
+        <button
+          type="button"
+          disabled={busy || selected.every((id) => !stagedIds.includes(id))}
+          onClick={() => void publish()}
+          className="inline-flex min-h-[48px] items-center rounded-[10px] bg-[#0B7F86] px-5 text-base font-medium text-white hover:bg-[#08666C] disabled:opacity-60"
+        >
+          {busy ? "Working…" : "Publish selected"}
+        </button>
+        <button
+          type="button"
+          disabled={busy || selected.every((id) => !pauseableIds.includes(id))}
+          onClick={() => void pause()}
+          className="inline-flex min-h-[48px] items-center rounded-[10px] border border-[#0B7F86] bg-white px-5 text-base font-medium text-[#0B7F86] hover:bg-[#F7F9FA] disabled:opacity-60"
+        >
+          {busy ? "Working…" : "Pause selected"}
+        </button>
+      </div>
       {message ? (
         <p className="mt-4 text-base leading-7 text-[#24313A]" role="status">
           {message}
@@ -118,13 +187,22 @@ export function ImportedQuestionsTable({
           <thead className="sticky top-0 bg-[#F7F9FA] text-[#163A59]">
             <tr>
               <th className="px-3 py-2 font-medium">
-                <input
-                  type="checkbox"
-                  aria-label="Select staged questions"
-                  checked={allStagedSelected}
-                  disabled={stagedIds.length === 0}
-                  onChange={toggleAllStaged}
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="checkbox"
+                    aria-label="Select staged questions"
+                    checked={allStagedSelected}
+                    disabled={stagedIds.length === 0}
+                    onChange={toggleAllStaged}
+                  />
+                  <input
+                    type="checkbox"
+                    aria-label="Select published questions"
+                    checked={allPauseableSelected}
+                    disabled={pauseableIds.length === 0}
+                    onChange={toggleAllPauseable}
+                  />
+                </div>
               </th>
               <th className="px-3 py-2 font-medium">Row</th>
               <th className="px-3 py-2 font-medium">Question version</th>
@@ -135,21 +213,20 @@ export function ImportedQuestionsTable({
           </thead>
           <tbody>
             {questions.map((question) => {
-              const staged = question.publication_status === "STAGED";
+              const selectable =
+                question.publication_status === "STAGED" || isPauseable(question);
               const line = lineById.get(question.question_version_id);
               const status =
-                question.publication_status === "PUBLISHED"
-                  ? "Published"
-                  : line?.outcome === "REJECTED" && line.reason
-                    ? line.reason
-                    : statusLabel(question.publication_status);
+                line?.outcome === "REJECTED" && line.reason
+                  ? line.reason
+                  : statusLabel(question);
               return (
                 <tr
                   key={question.question_version_id}
                   className="border-t border-[#D9E1E5]"
                 >
                   <td className="px-3 py-2 align-top">
-                    {staged ? (
+                    {selectable ? (
                       <input
                         type="checkbox"
                         aria-label={`Select ${question.question_version_id}`}
