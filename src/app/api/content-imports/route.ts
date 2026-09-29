@@ -46,6 +46,7 @@ export async function POST(req: Request) {
     );
   }
 
+  const purpose = incoming.get("purpose");
   const forward = new UndiciFormData();
   forward.append(
     "file",
@@ -53,6 +54,9 @@ export async function POST(req: Request) {
       type: file.type,
     }),
   );
+  if (typeof purpose === "string" && purpose.length > 0) {
+    forward.append("purpose", purpose);
+  }
 
   const response = await fetch(adminApi("/api/admin/content-imports"), {
     method: "POST",

@@ -2,6 +2,7 @@ type EligibilityReport = {
   imported: number;
   published: number;
   mvp_eligible: number;
+  calibration_reserved?: number;
   unavailable_invalid: number;
   unsupported_interaction: number;
   launch_eligible_minimum: number;
@@ -26,13 +27,15 @@ export function EligibilitySummary({
       <h2 className="text-xl font-semibold text-[#163A59]">Eligibility</h2>
       <p className="mt-3 text-base leading-7 text-[#24313A]">
         Imported: {report.imported}. Published: {report.published}. MVP-eligible:{" "}
-        {report.mvp_eligible}. Unavailable or invalid: {report.unavailable_invalid}.
-        Unsupported interaction type: {report.unsupported_interaction}.
+        {report.mvp_eligible}. Calibration reserved: {report.calibration_reserved ?? 0}.
+        Unavailable or invalid: {report.unavailable_invalid}. Unsupported
+        interaction type: {report.unsupported_interaction}.
       </p>
       <p className="mt-2 text-base leading-7 text-[#24313A]">{launchLine}</p>
       <p className="mt-2 text-base leading-7 text-[#66727A]">
-        Eligible means published, active, valid, complete, and MCQ or SATA. Staged
-        items and paused published versions are imported but not eligible.
+        Eligible means published, active, valid, complete, and MCQ or SATA, and
+        not on the Calibration set. Staged items, paused published versions, and
+        Calibration reserved versions are imported but not Practice-eligible.
         Learners still do not see questions.
       </p>
     </section>

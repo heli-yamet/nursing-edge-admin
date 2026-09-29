@@ -25,12 +25,14 @@ type ImportedQuestion = {
   format: string;
   publication_status: "STAGED" | "PUBLISHED";
   active?: boolean;
+  on_calibration_blueprint?: boolean;
 };
 
 type EligibilityReport = {
   imported: number;
   published: number;
   mvp_eligible: number;
+  calibration_reserved?: number;
   unavailable_invalid: number;
   unsupported_interaction: number;
   launch_eligible_minimum: number;
@@ -78,8 +80,8 @@ export default async function ContentImportsPage() {
       </h1>
       <p className="mt-4 max-w-2xl text-base leading-7 text-[#24313A]">
         Upload a C2 workbook. Each question is validated and staged. Select
-        staged versions to publish, or published versions to pause. Learners
-        still do not see questions.
+        staged versions to publish, published versions to pause, or exactly 35
+        versions as the Calibration set. Learners still do not see questions.
       </p>
       <ContentImportForm />
       <EligibilitySummary report={eligibility} />

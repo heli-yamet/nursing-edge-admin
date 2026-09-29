@@ -27,6 +27,7 @@ type ImportResponse = {
   published?: boolean;
   batch?: ImportBatch;
   lines?: ImportLine[];
+  calibration?: { ok?: boolean; reason?: string | null };
 };
 
 function outcomeLabel(outcome: ImportLine["outcome"]): string {
@@ -49,6 +50,12 @@ export function ContentImportForm() {
     event.preventDefault();
     const form = event.currentTarget;
     const data = new FormData(form);
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    const purpose =
+      submitter instanceof HTMLButtonElement && submitter.value
+        ? submitter.value
+        : "bank";
+    data.set("purpose", purpose);
     const file = data.get("file");
     if (!(file instanceof File) || file.size === 0) {
       setMessage("Choose a C2 .xlsx workbook.");
@@ -69,6 +76,12 @@ export function ContentImportForm() {
         return;
       }
       setResult(payload);
+      if (purpose === "calibration" && payload.calibration && !payload.calibration.ok) {
+        setMessage(
+          payload.calibration.reason ??
+            "Imported and staged. Not saved as Calibration.",
+        );
+      }
       router.refresh();
     } catch {
       setMessage("Import failed.");
@@ -91,17 +104,31 @@ export function ContentImportForm() {
           disabled={busy}
           className="mt-2 block w-full text-base text-[#24313A] file:mr-4 file:min-h-[48px] file:rounded-[10px] file:border file:border-[#D9E1E5] file:bg-white file:px-4 file:text-base file:font-medium file:text-[#163A59]"
         />
-        <button
-          type="submit"
-          disabled={busy}
-          className="mt-4 inline-flex min-h-[48px] items-center rounded-[10px] bg-[#0B7F86] px-5 text-base font-medium text-white hover:bg-[#08666C] disabled:opacity-60"
-        >
-          {busy ? "Importing…" : "Upload and stage"}
-        </button>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button
+            type="submit"
+            name="purpose"
+            value="bank"
+            disabled={busy}
+            className="inline-flex min-h-[48px] items-center rounded-[10px] bg-[#0B7F86] px-5 text-base font-medium text-white hover:bg-[#08666C] disabled:opacity-60"
+          >
+            {busy ? "Importing…" : "Upload and stage"}
+          </button>
+          <button
+            type="submit"
+            name="purpose"
+            value="calibration"
+            disabled={busy}
+            className="inline-flex min-h-[48px] items-center rounded-[10px] border border-[#0B7F86] bg-white px-5 text-base font-medium text-[#0B7F86] hover:bg-[#F7F9FA] disabled:opacity-60"
+          >
+            {busy ? "Importing…" : "Upload as Calibration"}
+          </button>
+        </div>
       </form>
       <p className="mt-3 text-base leading-7 text-[#66727A]">
         The file is parsed in memory and discarded. Rows are staged only. They are
-        not published and are not learner-visible.
+        not published and are not learner-visible. Upload as Calibration saves the
+        successful rows as the Calibration set only when there are exactly 35.
       </p>
       {message ? (
         <p className="mt-4 text-base leading-7 text-[#9B2C2C]" role="alert">
@@ -115,6 +142,9 @@ export function ContentImportForm() {
             {result.batch.source}: {result.batch.passed_count} passed,{" "}
             {result.batch.failed_count} failed, {result.batch.unchanged_count}{" "}
             unchanged of {result.batch.line_count}. Not published.
+            {result.calibration?.ok
+              ? " Saved as the Calibration set. Ordinary Practice will not use these 35."
+              : ""}
           </p>
           <div className="mt-4 max-h-[480px] overflow-auto rounded-[10px] border border-[#D9E1E5] bg-white">
             <table className="min-w-full text-left text-sm">
