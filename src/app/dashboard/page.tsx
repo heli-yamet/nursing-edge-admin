@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { SignOutButton } from "@/components/SignOutButton";
+import { AdminShell } from "@/components/AdminShell";
 import { adminApi } from "@/lib/site";
 
 export default async function DashboardPage() {
@@ -26,7 +26,7 @@ export default async function DashboardPage() {
   const admin = data.admin;
 
   return (
-    <main className="mx-auto w-full max-w-[760px] px-5 py-12 sm:px-6 sm:py-16">
+    <AdminShell current="dashboard">
       <p className="text-sm font-medium tracking-wide text-[#0B7F86]">
         {admin.role === "SUPER_ADMIN" ? "Super Admin" : "Admin"}
       </p>
@@ -54,7 +54,6 @@ export default async function DashboardPage() {
         Other console views are not built yet. Publish is not available on this
         screen.
       </p>
-      <SignOutButton />
-    </main>
+    </AdminShell>
   );
 }

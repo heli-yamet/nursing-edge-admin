@@ -15,7 +15,7 @@ export function SignOutButton() {
     <button
       type="button"
       onClick={() => void signOut()}
-      className="mt-8 inline-flex min-h-[48px] items-center rounded-[10px] border border-[#D9E1E5] bg-white px-5 text-base font-medium text-[#163A59]"
+      className="inline-flex min-h-[48px] items-center rounded-[10px] px-3 text-base font-medium text-[#66727A] hover:bg-[#F7F9FA] hover:text-[#163A59]"
     >
       Sign out
     </button>

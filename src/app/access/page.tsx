@@ -1,8 +1,7 @@
 import { cookies } from "next/headers";
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AdminShell } from "@/components/AdminShell";
 import { ManualGrantForm } from "@/components/ManualGrantForm";
-import { SignOutButton } from "@/components/SignOutButton";
 import { adminApi } from "@/lib/site";
 
 type GrantAttempt = {
@@ -54,13 +53,8 @@ export default async function ManualAccessPage() {
   const grants = list.ok ? (list.grants ?? []) : [];
 
   return (
-    <main className="mx-auto w-full max-w-[760px] px-5 py-12 sm:px-6 sm:py-16">
-      <p className="text-sm font-medium tracking-wide text-[#0B7F86]">
-        <Link href="/dashboard" className="underline">
-          Dashboard
-        </Link>
-      </p>
-      <h1 className="mt-2 text-[28px] leading-tight font-semibold text-[#163A59] sm:text-[32px]">
+    <AdminShell current="access">
+      <h1 className="text-[28px] leading-tight font-semibold text-[#163A59] sm:text-[32px]">
         Manual access
       </h1>
       <p className="mt-4 max-w-2xl text-base leading-7 text-[#24313A]">
@@ -100,7 +94,6 @@ export default async function ManualAccessPage() {
           </div>
         </section>
       ) : null}
-      <SignOutButton />
-    </main>
+    </AdminShell>
   );
 }

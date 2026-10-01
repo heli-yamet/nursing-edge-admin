@@ -1,11 +1,10 @@
 import { cookies } from "next/headers";
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AdminShell } from "@/components/AdminShell";
 import { ContentImportForm } from "@/components/ContentImportForm";
 import { EligibilitySummary } from "@/components/EligibilitySummary";
 import { ImportedQuestionsTable } from "@/components/ImportedQuestionsTable";
 import { PriorBatches } from "@/components/PriorBatches";
-import { SignOutButton } from "@/components/SignOutButton";
 import { adminApi } from "@/lib/site";
 
 type ImportBatch = {
@@ -69,13 +68,8 @@ export default async function ContentImportsPage() {
   const eligibility = list.ok ? (list.eligibility ?? null) : null;
 
   return (
-    <main className="mx-auto w-full max-w-[960px] px-5 py-12 sm:px-6 sm:py-16">
-      <p className="text-sm font-medium tracking-wide text-[#0B7F86]">
-        <Link href="/dashboard" className="underline">
-          Dashboard
-        </Link>
-      </p>
-      <h1 className="mt-2 text-[28px] leading-tight font-semibold text-[#163A59] sm:text-[32px]">
+    <AdminShell current="imports">
+      <h1 className="text-[28px] leading-tight font-semibold text-[#163A59] sm:text-[32px]">
         Content Imports
       </h1>
       <p className="mt-4 max-w-2xl text-base leading-7 text-[#24313A]">
@@ -87,7 +81,6 @@ export default async function ContentImportsPage() {
       <EligibilitySummary report={eligibility} />
       <ImportedQuestionsTable questions={questions} />
       <PriorBatches batches={batches} />
-      <SignOutButton />
-    </main>
+    </AdminShell>
   );
 }
