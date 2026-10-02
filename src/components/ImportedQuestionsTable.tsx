@@ -15,9 +15,18 @@ type ImportedQuestion = {
 
 type ActionLine = {
   question_version_id: string;
-  outcome: "PUBLISHED" | "PAUSED" | "REJECTED";
+  outcome: "PUBLISHED" | "PAUSED" | "RESUMED" | "REJECTED";
   reason: string | null;
 };
+
+type StatusFilter = "ALL" | "STAGED" | "PUBLISHED" | "PAUSED";
+
+const FILTERS: { id: StatusFilter; label: string }[] = [
+  { id: "ALL", label: "All" },
+  { id: "STAGED", label: "Staged" },
+  { id: "PUBLISHED", label: "Published" },
+  { id: "PAUSED", label: "Paused" },
+];
 
 type ActionResponse = {
   ok?: boolean;
@@ -30,11 +39,20 @@ function isPauseable(question: ImportedQuestion): boolean {
   return question.publication_status === "PUBLISHED" && question.active !== false;
 }
 
-function statusLabel(question: ImportedQuestion): string {
+function isResumable(question: ImportedQuestion): boolean {
+  return question.publication_status === "PUBLISHED" && question.active === false;
+}
+
+function statusOf(question: ImportedQuestion): Exclude<StatusFilter, "ALL"> {
   if (question.publication_status === "STAGED") {
-    return "Staged";
+    return "STAGED";
   }
-  return question.active === false ? "Paused" : "Published";
+  return question.active === false ? "PAUSED" : "PUBLISHED";
+}
+
+function statusLabel(question: ImportedQuestion): string {
+  const status = statusOf(question);
+  return FILTERS.find((filter) => filter.id === status)?.label ?? status;
 }
 
 function poolLabel(question: ImportedQuestion): string {
@@ -48,6 +66,7 @@ export function ImportedQuestionsTable({
 }) {
   const router = useRouter();
   const [selected, setSelected] = useState<string[]>([]);
+  const [filter, setFilter] = useState<StatusFilter>("ALL");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [lines, setLines] = useState<ActionLine[]>([]);
@@ -66,15 +85,46 @@ export function ImportedQuestionsTable({
         .map((question) => question.question_version_id),
     [questions],
   );
+  const resumableIds = useMemo(
+    () =>
+      questions
+        .filter((question) => isResumable(question))
+        .map((question) => question.question_version_id),
+    [questions],
+  );
+  const counts = useMemo(() => {
+    const result: Record<StatusFilter, number> = {
+      ALL: questions.length,
+      STAGED: 0,
+      PUBLISHED: 0,
+      PAUSED: 0,
+    };
+    for (const question of questions) {
+      result[statusOf(question)] += 1;
+    }
+    return result;
+  }, [questions]);
+  const visible = useMemo(
+    () =>
+      filter === "ALL"
+        ? questions
+        : questions.filter((question) => statusOf(question) === filter),
+    [questions, filter],
+  );
+  const visibleIds = useMemo(
+    () => visible.map((question) => question.question_version_id),
+    [visible],
+  );
   const lineById = useMemo(
     () => new Map(lines.map((line) => [line.question_version_id, line])),
     [lines],
   );
-  const allStagedSelected =
-    stagedIds.length > 0 && stagedIds.every((id) => selected.includes(id));
-  const allPauseableSelected =
-    pauseableIds.length > 0 &&
-    pauseableIds.every((id) => selected.includes(id));
+  const selectedVisibleCount = visibleIds.filter((id) =>
+    selected.includes(id),
+  ).length;
+  const allVisibleSelected =
+    visibleIds.length > 0 && selectedVisibleCount === visibleIds.length;
+  const someVisibleSelected = selectedVisibleCount > 0 && !allVisibleSelected;
 
   if (questions.length === 0) {
     return null;
@@ -86,22 +136,18 @@ export function ImportedQuestionsTable({
     );
   }
 
-  function toggleAllStaged() {
+  function toggleAllVisible() {
     setSelected((current) => {
-      if (allStagedSelected) {
-        return current.filter((id) => !stagedIds.includes(id));
+      if (allVisibleSelected) {
+        return current.filter((id) => !visibleIds.includes(id));
       }
-      return [...new Set([...current, ...stagedIds])];
+      return [...new Set([...current, ...visibleIds])];
     });
   }
 
-  function toggleAllPauseable() {
-    setSelected((current) => {
-      if (allPauseableSelected) {
-        return current.filter((id) => !pauseableIds.includes(id));
-      }
-      return [...new Set([...current, ...pauseableIds])];
-    });
+  function chooseFilter(next: StatusFilter) {
+    setFilter(next);
+    setSelected([]);
   }
 
   async function postAction(
@@ -156,6 +202,15 @@ export function ImportedQuestionsTable({
     );
   }
 
+  async function resume() {
+    await postAction(
+      "/api/question-resumes",
+      selected.filter((id) => resumableIds.includes(id)),
+      "Selected questions are resumed. They are eligible again. Learners still do not see them.",
+      "Nothing was resumed.",
+    );
+  }
+
   async function setCalibration() {
     await postAction(
       "/api/calibration-blueprints",
@@ -171,8 +226,8 @@ export function ImportedQuestionsTable({
       <p className="mt-2 text-base leading-7 text-[#24313A]">
         {questions.length} question {questions.length === 1 ? "version" : "versions"}{" "}
         in the bank. Select staged versions to publish, published versions to
-        pause, or exactly 35 versions as the Calibration set. Learners still do
-        not see questions.
+        pause, paused versions to resume, or exactly 35 versions as the
+        Calibration set. Learners still do not see questions.
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <button
@@ -193,6 +248,14 @@ export function ImportedQuestionsTable({
         </button>
         <button
           type="button"
+          disabled={busy || selected.every((id) => !resumableIds.includes(id))}
+          onClick={() => void resume()}
+          className="inline-flex min-h-[48px] items-center rounded-[10px] border border-[#0B7F86] bg-white px-5 text-base font-medium text-[#0B7F86] hover:bg-[#F7F9FA] disabled:opacity-60"
+        >
+          {busy ? "Working…" : "Resume selected"}
+        </button>
+        <button
+          type="button"
           disabled={busy || selected.length !== 35}
           onClick={() => void setCalibration()}
           className="inline-flex min-h-[48px] items-center rounded-[10px] border border-[#163A59] bg-white px-5 text-base font-medium text-[#163A59] hover:bg-[#F7F9FA] disabled:opacity-60"
@@ -205,27 +268,48 @@ export function ImportedQuestionsTable({
           {message}
         </p>
       ) : null}
-      <div className="mt-4 max-h-[480px] overflow-auto rounded-[10px] border border-[#D9E1E5] bg-white">
+      <div
+        className="mt-6 flex flex-wrap gap-2"
+        role="group"
+        aria-label="Show questions by status"
+      >
+        {FILTERS.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            aria-pressed={filter === option.id}
+            onClick={() => chooseFilter(option.id)}
+            className={`inline-flex min-h-[40px] items-center rounded-[10px] border px-4 text-sm font-medium ${
+              filter === option.id
+                ? "border-[#163A59] bg-[#163A59] text-white"
+                : "border-[#D9E1E5] bg-white text-[#163A59] hover:bg-[#F7F9FA]"
+            }`}
+          >
+            {option.label} ({counts[option.id]})
+          </button>
+        ))}
+      </div>
+      <p className="mt-3 text-sm text-[#24313A]">
+        {selected.length} selected
+      </p>
+      <div className="mt-2 max-h-[480px] overflow-auto rounded-[10px] border border-[#D9E1E5] bg-white">
         <table className="min-w-full text-left text-sm">
           <thead className="sticky top-0 bg-[#F7F9FA] text-[#163A59]">
             <tr>
               <th className="px-3 py-2 font-medium">
-                <div className="flex gap-2">
-                  <input
-                    type="checkbox"
-                    aria-label="Select staged questions"
-                    checked={allStagedSelected}
-                    disabled={stagedIds.length === 0}
-                    onChange={toggleAllStaged}
-                  />
-                  <input
-                    type="checkbox"
-                    aria-label="Select published questions"
-                    checked={allPauseableSelected}
-                    disabled={pauseableIds.length === 0}
-                    onChange={toggleAllPauseable}
-                  />
-                </div>
+                <input
+                  type="checkbox"
+                  aria-label="Select all shown questions"
+                  title="Select all shown questions"
+                  checked={allVisibleSelected}
+                  ref={(input) => {
+                    if (input) {
+                      input.indeterminate = someVisibleSelected;
+                    }
+                  }}
+                  disabled={visibleIds.length === 0}
+                  onChange={toggleAllVisible}
+                />
               </th>
               <th className="px-3 py-2 font-medium">Row</th>
               <th className="px-3 py-2 font-medium">Question version</th>
@@ -236,7 +320,7 @@ export function ImportedQuestionsTable({
             </tr>
           </thead>
           <tbody>
-            {questions.map((question) => {
+            {visible.map((question) => {
               const line = lineById.get(question.question_version_id);
               const status =
                 line?.outcome === "REJECTED" && line.reason
