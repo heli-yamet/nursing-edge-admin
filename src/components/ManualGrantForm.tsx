@@ -9,6 +9,7 @@ type GrantResponse = {
   email?: string;
   reason?: string | null;
   error?: string;
+  invitation_sent?: boolean | null;
 };
 
 export function ManualGrantForm() {
@@ -30,8 +31,17 @@ export function ManualGrantForm() {
       });
       const payload = (await response.json()) as GrantResponse;
       if (payload.outcome === "GRANTED") {
-        setTone("info");
-        setMessage(`Access granted for ${payload.email}. No invitation was sent.`);
+        if (payload.invitation_sent) {
+          setTone("info");
+          setMessage(
+            `Access granted for ${payload.email}. An invitation email was sent.`,
+          );
+        } else {
+          setTone("error");
+          setMessage(
+            `Access granted for ${payload.email}, but the invitation email could not be sent. Ask the learner to create an account with this email.`,
+          );
+        }
         setEmail("");
         router.refresh();
         return;
