@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { adminFetch, readAdminToken } from "@/lib/admin-session";
 import { useMemo, useState } from "react";
 
 type ImportedQuestion = {
@@ -160,10 +161,14 @@ export function ImportedQuestionsTable({
       setMessage(emptyMessage);
       return;
     }
+    if (!readAdminToken()) {
+      setMessage("Sign in again before changing questions.");
+      return;
+    }
     setBusy(true);
     setMessage("");
     try {
-      const response = await fetch(path, {
+      const response = await adminFetch(path, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question_version_ids: ids }),
@@ -186,7 +191,7 @@ export function ImportedQuestionsTable({
 
   async function publish() {
     await postAction(
-      "/api/question-publishes",
+      "/api/admin/question-publishes",
       selected.filter((id) => stagedIds.includes(id)),
       "Selected questions are published. Learners still do not see them.",
       "Nothing was published.",
@@ -195,7 +200,7 @@ export function ImportedQuestionsTable({
 
   async function pause() {
     await postAction(
-      "/api/question-pauses",
+      "/api/admin/question-pauses",
       selected.filter((id) => pauseableIds.includes(id)),
       "Selected questions are paused. They are no longer eligible. Learners still do not see them.",
       "Nothing was paused.",
@@ -204,7 +209,7 @@ export function ImportedQuestionsTable({
 
   async function resume() {
     await postAction(
-      "/api/question-resumes",
+      "/api/admin/question-resumes",
       selected.filter((id) => resumableIds.includes(id)),
       "Selected questions are resumed. They are eligible again. Learners still do not see them.",
       "Nothing was resumed.",
@@ -225,7 +230,7 @@ export function ImportedQuestionsTable({
       return;
     }
     await postAction(
-      "/api/question-deletes",
+      "/api/admin/question-deletes",
       ids,
       "Selected staged questions are deleted. Published questions stay in the bank.",
       "Nothing was deleted.",
@@ -234,7 +239,7 @@ export function ImportedQuestionsTable({
 
   async function setCalibration() {
     await postAction(
-      "/api/calibration-blueprints",
+      "/api/admin/calibration-blueprints",
       selected,
       "Those 35 questions are the Calibration set. Ordinary Practice will not use them. Learners still do not see them.",
       "Select exactly 35 imported questions.",

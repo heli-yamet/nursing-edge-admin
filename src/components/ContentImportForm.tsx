@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { adminFetch, readAdminToken } from "@/lib/admin-session";
 
 type ImportLine = {
   line_id: string;
@@ -62,11 +63,16 @@ export function ContentImportForm() {
       return;
     }
 
+    if (!readAdminToken()) {
+      setMessage("Sign in again before uploading a workbook.");
+      return;
+    }
+
     setBusy(true);
     setMessage("");
     setResult(null);
     try {
-      const response = await fetch("/api/content-imports", {
+      const response = await adminFetch("/api/admin/content-imports", {
         method: "POST",
         body: data,
       });

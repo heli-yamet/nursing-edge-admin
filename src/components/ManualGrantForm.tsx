@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { adminFetch, readAdminToken } from "@/lib/admin-session";
 
 type GrantResponse = {
   ok?: boolean;
@@ -24,7 +25,12 @@ export function ManualGrantForm() {
     setBusy(true);
     setMessage("");
     try {
-      const response = await fetch("/api/access-grants", {
+      if (!readAdminToken()) {
+        setTone("error");
+        setMessage("Sign in again before granting access.");
+        return;
+      }
+      const response = await adminFetch("/api/admin/access-grants", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

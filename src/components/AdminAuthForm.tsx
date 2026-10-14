@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { saveAdminToken } from "@/lib/admin-session";
 import { adminApi } from "@/lib/site";
 
 type Mode = "signup" | "signin";
@@ -161,11 +162,7 @@ export function AdminAuthForm({ mode }: { mode: Mode }) {
         return;
       }
       if (data.result === "success" && data.token) {
-        await fetch("/api/session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: data.token }),
-        });
+        saveAdminToken(data.token);
         router.push("/dashboard");
         return;
       }
