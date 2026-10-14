@@ -1,8 +1,10 @@
 "use client";
 
+import { uploadPresigned } from "@vercel/blob/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { adminFetch, readAdminToken } from "@/lib/admin-session";
+import { adminApi } from "@/lib/site";
 
 type ImportLine = {
   line_id: string;
@@ -30,6 +32,14 @@ type ImportResponse = {
   lines?: ImportLine[];
   calibration?: { ok?: boolean; reason?: string | null };
 };
+
+function contentImportBlobPath(fileName: string): string | null {
+  const base = fileName.trim().replace(/\\/g, "/").split("/").pop() ?? "";
+  if (!/^[^/\\]+\.xlsx$/i.test(base)) {
+    return null;
+  }
+  return `content-imports/${base}`;
+}
 
 function outcomeLabel(outcome: ImportLine["outcome"]): string {
   if (outcome === "PASSED") {
@@ -68,13 +78,33 @@ export function ContentImportForm() {
       return;
     }
 
+    const blobPath = contentImportBlobPath(file.name);
+    if (!blobPath) {
+      setMessage("Choose a C2 .xlsx workbook.");
+      return;
+    }
+
     setBusy(true);
     setMessage("");
     setResult(null);
     try {
+      const blob = await uploadPresigned(blobPath, file, {
+        access: "private",
+        handleUploadUrl: adminApi("/api/admin/content-import-uploads"),
+        headers: { Authorization: `Bearer ${readAdminToken()}` },
+        contentType:
+          file.type ||
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
       const response = await adminFetch("/api/admin/content-imports", {
         method: "POST",
-        body: data,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: blob.url,
+          pathname: blob.pathname,
+          fileName: file.name,
+          purpose,
+        }),
       });
       const payload = (await response.json()) as ImportResponse;
       if (!payload.ok || !payload.batch) {
@@ -89,8 +119,8 @@ export function ContentImportForm() {
         );
       }
       router.refresh();
-    } catch {
-      setMessage("Import failed.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Import failed.");
     } finally {
       setBusy(false);
     }
@@ -132,7 +162,7 @@ export function ContentImportForm() {
         </div>
       </form>
       <p className="mt-3 text-base leading-7 text-[#66727A]">
-        The file is parsed in memory and discarded. Rows are staged only. They are
+        The workbook is uploaded to private storage, parsed, and then deleted. Rows are staged only. They are
         not published and are not learner-visible. Upload as Calibration saves the
         successful rows as the Calibration set only when there are exactly 35.
       </p>
