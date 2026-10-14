@@ -15,7 +15,7 @@ type ImportedQuestion = {
 
 type ActionLine = {
   question_version_id: string;
-  outcome: "PUBLISHED" | "PAUSED" | "RESUMED" | "REJECTED";
+  outcome: "PUBLISHED" | "PAUSED" | "RESUMED" | "DELETED" | "REJECTED";
   reason: string | null;
 };
 
@@ -211,6 +211,27 @@ export function ImportedQuestionsTable({
     );
   }
 
+  async function removeSelected() {
+    const ids = selected.filter((id) => stagedIds.includes(id));
+    if (ids.length === 0) {
+      setMessage("Nothing was deleted.");
+      return;
+    }
+    const noun = ids.length === 1 ? "staged question" : "staged questions";
+    const confirmed = window.confirm(
+      `Delete ${ids.length} ${noun}? Published questions stay in the bank.`,
+    );
+    if (!confirmed) {
+      return;
+    }
+    await postAction(
+      "/api/question-deletes",
+      ids,
+      "Selected staged questions are deleted. Published questions stay in the bank.",
+      "Nothing was deleted.",
+    );
+  }
+
   async function setCalibration() {
     await postAction(
       "/api/calibration-blueprints",
@@ -225,9 +246,9 @@ export function ImportedQuestionsTable({
       <h2 className="text-xl font-semibold text-[#163A59]">Imported questions</h2>
       <p className="mt-2 text-base leading-7 text-[#24313A]">
         {questions.length} question {questions.length === 1 ? "version" : "versions"}{" "}
-        in the bank. Select staged versions to publish, published versions to
-        pause, paused versions to resume, or exactly 35 versions as the
-        Calibration set. Learners still do not see questions.
+        in the bank. Select staged versions to publish or delete, published
+        versions to pause, paused versions to resume, or exactly 35 versions as
+        the Calibration set. Learners still do not see questions.
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <button
@@ -253,6 +274,14 @@ export function ImportedQuestionsTable({
           className="inline-flex min-h-[48px] items-center rounded-[10px] border border-[#0B7F86] bg-white px-5 text-base font-medium text-[#0B7F86] hover:bg-[#F7F9FA] disabled:opacity-60"
         >
           {busy ? "Working…" : "Resume selected"}
+        </button>
+        <button
+          type="button"
+          disabled={busy || selected.every((id) => !stagedIds.includes(id))}
+          onClick={() => void removeSelected()}
+          className="inline-flex min-h-[48px] items-center rounded-[10px] border border-[#8C3A3A] bg-white px-5 text-base font-medium text-[#8C3A3A] hover:bg-[#F7F9FA] disabled:opacity-60"
+        >
+          {busy ? "Working…" : "Delete selected"}
         </button>
         <button
           type="button"
