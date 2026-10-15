@@ -186,7 +186,6 @@ export function ContentImportForm() {
             <table className="min-w-full text-left text-sm">
               <thead className="sticky top-0 bg-[#F7F9FA] text-[#163A59]">
                 <tr>
-                  <th className="px-3 py-2 font-medium">Row</th>
                   <th className="px-3 py-2 font-medium">Question version</th>
                   <th className="px-3 py-2 font-medium">Permanent item</th>
                   <th className="px-3 py-2 font-medium">Result</th>
@@ -196,7 +195,6 @@ export function ContentImportForm() {
               <tbody>
                 {(result.lines ?? []).map((line) => (
                   <tr key={line.line_id} className="border-t border-[#D9E1E5]">
-                    <td className="px-3 py-2 align-top">{line.workbook_row}</td>
                     <td className="px-3 py-2 align-top font-mono text-xs">
                       {line.question_version_id}
                     </td>

@@ -345,7 +345,6 @@ export function ImportedQuestionsTable({
                   onChange={toggleAllVisible}
                 />
               </th>
-              <th className="px-3 py-2 font-medium">Row</th>
               <th className="px-3 py-2 font-medium">Question version</th>
               <th className="px-3 py-2 font-medium">Permanent item</th>
               <th className="px-3 py-2 font-medium">Format</th>
@@ -373,7 +372,6 @@ export function ImportedQuestionsTable({
                       onChange={() => toggle(question.question_version_id)}
                     />
                   </td>
-                  <td className="px-3 py-2 align-top">{question.workbook_row}</td>
                   <td className="px-3 py-2 align-top font-mono text-xs">
                     {question.question_version_id}
                   </td>
