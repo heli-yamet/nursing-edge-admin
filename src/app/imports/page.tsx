@@ -43,11 +43,7 @@ type EligibilityReport = {
   launch_gate_met: boolean;
 };
 
-export default async function ContentImportsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ tab?: string }>;
-}) {
+export default async function ContentImportsPage() {
   const token = (await cookies()).get("admin_token")?.value;
   if (!token) {
     redirect("/signin");
@@ -62,7 +58,6 @@ export default async function ContentImportsPage({
     redirect("/signin");
   }
 
-  const tab = (await searchParams).tab === "links" ? "links" : "questions";
   const headers = { Authorization: `Bearer ${token}` };
   const [listResponse, linksResponse] = await Promise.all([
     fetch(adminApi("/api/admin/content-imports"), {
@@ -95,7 +90,6 @@ export default async function ContentImportsPage({
         Content Imports
       </h1>
       <ImportTabs
-        tab={tab}
         questions={
           <>
             <p className="max-w-2xl text-base leading-7 text-[#24313A]">
