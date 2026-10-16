@@ -24,14 +24,35 @@ type ImportBatch = {
   unchanged_count: number;
 };
 
+type DomainCounts = {
+  passed: number;
+  failed: number;
+  unchanged: number;
+};
+
+type ImportDomains = {
+  content: DomainCounts;
+  mapping_and_exposure: DomainCounts;
+  evidence_and_teaching: DomainCounts;
+  runtime_binding: DomainCounts;
+};
+
 type ImportResponse = {
   ok?: boolean;
   error?: string;
   published?: boolean;
   batch?: ImportBatch;
   lines?: ImportLine[];
+  domains?: ImportDomains;
   calibration?: { ok?: boolean; reason?: string | null };
 };
+
+const DOMAIN_LABELS: { key: keyof ImportDomains; label: string }[] = [
+  { key: "content", label: "Content" },
+  { key: "mapping_and_exposure", label: "Mapping and exposure" },
+  { key: "evidence_and_teaching", label: "Evidence and teaching" },
+  { key: "runtime_binding", label: "Runtime binding" },
+];
 
 function contentImportBlobPath(fileName: string): string | null {
   const base = fileName.trim().replace(/\\/g, "/").split("/").pop() ?? "";
@@ -182,6 +203,22 @@ export function ContentImportForm() {
               ? " Saved as the Calibration set. Ordinary Practice will not use these 35."
               : ""}
           </p>
+          {result.domains ? (
+            <ul className="mt-4 space-y-2 text-base leading-7 text-[#24313A]">
+              {DOMAIN_LABELS.map((domain) => {
+                const counts = result.domains?.[domain.key];
+                if (!counts) {
+                  return null;
+                }
+                return (
+                  <li key={domain.key}>
+                    {domain.label}: {counts.passed} passed, {counts.failed}{" "}
+                    failed, {counts.unchanged} unchanged.
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
           <div className="mt-4 max-h-[480px] overflow-auto rounded-[10px] border border-[#D9E1E5] bg-white">
             <table className="min-w-full text-left text-sm">
               <thead className="sticky top-0 bg-[#F7F9FA] text-[#163A59]">
