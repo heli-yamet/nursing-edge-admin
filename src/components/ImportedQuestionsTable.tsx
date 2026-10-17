@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useImportFocus } from "@/components/import-focus";
+import { QuestionDetailDialog } from "@/components/QuestionDetailDialog";
 import { adminFetch, readAdminToken } from "@/lib/admin-session";
 import { useEffect, useMemo, useState } from "react";
 
@@ -74,6 +75,7 @@ export function ImportedQuestionsTable({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [lines, setLines] = useState<ActionLine[]>([]);
+  const [detailVersionId, setDetailVersionId] = useState<string | null>(null);
 
   const stagedIds = useMemo(
     () =>
@@ -379,6 +381,9 @@ export function ImportedQuestionsTable({
               <th className="px-3 py-2 font-medium">Format</th>
               <th className="px-3 py-2 font-medium">Pool</th>
               <th className="px-3 py-2 font-medium">Status</th>
+              <th className="px-3 py-2 font-medium">
+                <span className="sr-only">Details</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -415,12 +420,26 @@ export function ImportedQuestionsTable({
                   <td className="px-3 py-2 align-top">{question.format}</td>
                   <td className="px-3 py-2 align-top">{poolLabel(question)}</td>
                   <td className="px-3 py-2 align-top">{status}</td>
+                  <td className="px-3 py-2 align-top">
+                    <button
+                      type="button"
+                      aria-label={`Details for ${question.question_version_id}`}
+                      onClick={() => setDetailVersionId(question.question_version_id)}
+                      className="inline-flex min-h-[32px] min-w-[40px] items-center justify-center rounded-[8px] px-2 text-base font-medium tracking-widest text-[#163A59] underline decoration-[#163A59] underline-offset-2 hover:text-[#0B7F86]"
+                    >
+                      ...
+                    </button>
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
+      <QuestionDetailDialog
+        questionVersionId={detailVersionId}
+        onClose={() => setDetailVersionId(null)}
+      />
     </section>
   );
 }

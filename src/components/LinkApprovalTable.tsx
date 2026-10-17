@@ -312,7 +312,6 @@ export function LinkApprovalTable({
               <th className="px-3 py-2 font-medium">From</th>
               <th className="px-3 py-2 font-medium">To</th>
               <th className="px-3 py-2 font-medium">Status</th>
-              <th className="px-3 py-2 font-medium">Decision</th>
               <th className="px-3 py-2 font-medium">Admin</th>
               <th className="px-3 py-2 font-medium">Time</th>
             </tr>
@@ -346,9 +345,6 @@ export function LinkApprovalTable({
                       label={link.to_ref}
                       questionVersionId={link.to_question_version}
                     />
-                  </td>
-                  <td className="px-3 py-2 align-top">
-                    {statusLabel(link.workbook_status)}
                   </td>
                   <td className="px-3 py-2 align-top">
                     {decisionLabel(link.decision)}
