@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { adminFetch } from "@/lib/admin-session";
 
 type DetailOption = {
@@ -23,9 +23,10 @@ type LinkedQuestion = DetailQuestion & {
   link_revision: number;
 };
 
-type QuestionDetail = DetailQuestion & {
-  confirmation: LinkedQuestion[];
-  repair: LinkedQuestion[];
+type QuestionDetail = {
+  original: DetailQuestion[];
+  clinical: LinkedQuestion[];
+  physiology: LinkedQuestion[];
 };
 
 export function QuestionDetailDialog({
@@ -131,18 +132,33 @@ export function QuestionDetailDialog({
           </p>
         ) : null}
         {detail ? (
-          <div className="mt-4 space-y-8">
-            <QuestionBlock question={detail} />
-            <LinkedSection
-              title="Due Confirmation"
-              empty="No clinical question is linked for Confirmation."
-              questions={detail.confirmation}
-            />
-            <LinkedSection
-              title="Due Repair"
-              empty="No physiology question is linked for Repair."
-              questions={detail.repair}
-            />
+          <div className="mt-6">
+            <DetailSection title="Original question">
+              {detail.original.length === 0 ? (
+                <p className="text-base leading-7 text-[#24313A]">
+                  No original question is stored for this link.
+                </p>
+              ) : (
+                detail.original.map((question) => (
+                  <QuestionBlock
+                    key={question.question_version_id}
+                    question={question}
+                  />
+                ))
+              )}
+            </DetailSection>
+            <DetailSection title="Clinical question">
+              <LinkedQuestions
+                empty="No clinical question is linked."
+                questions={detail.clinical}
+              />
+            </DetailSection>
+            <DetailSection title="Physiology question">
+              <LinkedQuestions
+                empty="No physiology question is linked."
+                questions={detail.physiology}
+              />
+            </DetailSection>
           </div>
         ) : null}
       </div>
@@ -150,36 +166,44 @@ export function QuestionDetailDialog({
   );
 }
 
-function LinkedSection({
+function DetailSection({
   title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="border-t border-[#D9E1E5] py-6 first:border-t-0 first:pt-0">
+      <h3 className="text-lg font-semibold text-[#163A59]">{title}</h3>
+      <div className="mt-3">{children}</div>
+    </section>
+  );
+}
+
+function LinkedQuestions({
   empty,
   questions,
 }: {
-  title: string;
   empty: string;
   questions: LinkedQuestion[];
 }) {
+  if (questions.length === 0) {
+    return <p className="text-base leading-7 text-[#24313A]">{empty}</p>;
+  }
   return (
-    <section>
-      <h3 className="text-lg font-semibold text-[#163A59]">{title}</h3>
-      {questions.length === 0 ? (
-        <p className="mt-2 text-base leading-7 text-[#24313A]">{empty}</p>
-      ) : (
-        <div className="mt-3 space-y-6">
-          {questions.map((question) => (
-            <div
-              key={`${question.link_id}-${question.link_revision}`}
-              className="rounded-[12px] border border-[#D9E1E5] p-4"
-            >
-              <p className="text-sm text-[#163A59]">
-                {question.link_id} revision {question.link_revision}
-              </p>
-              <QuestionBlock question={question} />
-            </div>
-          ))}
+    <div className="space-y-6">
+      {questions.map((question) => (
+        <div key={`${question.link_id}-${question.link_revision}-${question.question_version_id}`}>
+          {question.link_id ? (
+            <p className="text-sm text-[#163A59]">
+              {question.link_id} revision {question.link_revision}
+            </p>
+          ) : null}
+          <QuestionBlock question={question} />
         </div>
-      )}
-    </section>
+      ))}
+    </div>
   );
 }
 
