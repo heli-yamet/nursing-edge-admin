@@ -14,6 +14,7 @@ type ImportedQuestion = {
   publication_status: "STAGED" | "PUBLISHED";
   active?: boolean;
   on_calibration_blueprint?: boolean;
+  role?: string | null;
 };
 
 type ActionLine = {
@@ -59,7 +60,16 @@ function statusLabel(question: ImportedQuestion): string {
 }
 
 function poolLabel(question: ImportedQuestion): string {
-  return question.on_calibration_blueprint ? "Calibration" : "Practice";
+  if (question.on_calibration_blueprint) {
+    return "Calibration";
+  }
+  if (question.role === "AP_REINFORCEMENT") {
+    return "Physiology";
+  }
+  if (question.role === "CLINICAL_SIBLING_RESERVED") {
+    return "Clinical";
+  }
+  return "Practice";
 }
 
 export function ImportedQuestionsTable({

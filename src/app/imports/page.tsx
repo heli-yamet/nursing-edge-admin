@@ -30,6 +30,7 @@ type ImportedQuestion = {
   publication_status: "STAGED" | "PUBLISHED";
   active?: boolean;
   on_calibration_blueprint?: boolean;
+  role?: string | null;
 };
 
 type EligibilityReport = {
