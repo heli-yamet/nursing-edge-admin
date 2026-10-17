@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { useImportFocus } from "@/components/import-focus";
 import { adminFetch, readAdminToken } from "@/lib/admin-session";
 
 export type AdminLinkRow = {
@@ -11,6 +12,8 @@ export type AdminLinkRow = {
   workbook_status: string;
   from_ref: string;
   to_ref: string;
+  from_question_version: string | null;
+  to_question_version: string | null;
   decision: "unapproved" | "approved" | "banned";
   admin_id: string | null;
   acted_at: string | null;
@@ -31,6 +34,31 @@ const DECISION_FILTERS: { id: DecisionFilter; label: string }[] = [
   { id: "approved", label: "Approved" },
   { id: "banned", label: "Banned" },
 ];
+
+function QuestionJump({
+  label,
+  questionVersionId,
+}: {
+  label: string;
+  questionVersionId: string | null;
+}) {
+  const focus = useImportFocus();
+  if (!label) {
+    return null;
+  }
+  if (!questionVersionId || !focus) {
+    return <>{label}</>;
+  }
+  return (
+    <button
+      type="button"
+      className="underline decoration-[#163A59] underline-offset-2 hover:text-[#0B7F86]"
+      onClick={() => focus.showQuestion(questionVersionId)}
+    >
+      {label}
+    </button>
+  );
+}
 
 function rowKey(row: AdminLinkRow): string {
   return `${row.link_kind}:${row.link_id}:${row.link_revision}`;
@@ -308,10 +336,16 @@ export function LinkApprovalTable({
                   </td>
                   <td className="px-3 py-2 align-top">{link.link_revision}</td>
                   <td className="px-3 py-2 align-top whitespace-nowrap">
-                    {link.from_ref}
+                    <QuestionJump
+                      label={link.from_ref}
+                      questionVersionId={link.from_question_version}
+                    />
                   </td>
                   <td className="px-3 py-2 align-top whitespace-nowrap">
-                    {link.to_ref}
+                    <QuestionJump
+                      label={link.to_ref}
+                      questionVersionId={link.to_question_version}
+                    />
                   </td>
                   <td className="px-3 py-2 align-top">
                     {statusLabel(link.workbook_status)}

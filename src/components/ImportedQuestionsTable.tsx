@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useImportFocus } from "@/components/import-focus";
 import { adminFetch, readAdminToken } from "@/lib/admin-session";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type ImportedQuestion = {
   question_id: string;
@@ -66,6 +67,8 @@ export function ImportedQuestionsTable({
   questions: ImportedQuestion[];
 }) {
   const router = useRouter();
+  const focus = useImportFocus();
+  const highlighted = focus?.highlightedQuestionVersionId ?? null;
   const [selected, setSelected] = useState<string[]>([]);
   const [filter, setFilter] = useState<StatusFilter>("ALL");
   const [busy, setBusy] = useState(false);
@@ -105,6 +108,18 @@ export function ImportedQuestionsTable({
     }
     return result;
   }, [questions]);
+  useEffect(() => {
+    if (!highlighted) {
+      return;
+    }
+    const match = questions.find(
+      (question) => question.question_version_id === highlighted,
+    );
+    if (match && filter !== "ALL" && statusOf(match) !== filter) {
+      setFilter("ALL");
+    }
+  }, [highlighted, questions, filter]);
+
   const visible = useMemo(
     () =>
       filter === "ALL"
@@ -116,6 +131,20 @@ export function ImportedQuestionsTable({
     () => visible.map((question) => question.question_version_id),
     [visible],
   );
+
+  useEffect(() => {
+    if (!highlighted) {
+      return;
+    }
+    const row = document.getElementById(`imported-question-${highlighted}`);
+    if (!row) {
+      return;
+    }
+    const frame = requestAnimationFrame(() => {
+      row.scrollIntoView({ block: "center" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [highlighted, visible]);
   const lineById = useMemo(
     () => new Map(lines.map((line) => [line.question_version_id, line])),
     [lines],
@@ -362,7 +391,12 @@ export function ImportedQuestionsTable({
               return (
                 <tr
                   key={question.question_version_id}
-                  className="border-t border-[#D9E1E5]"
+                  id={`imported-question-${question.question_version_id}`}
+                  className={`border-t border-[#D9E1E5] ${
+                    highlighted === question.question_version_id
+                      ? "bg-[#FFF6D8]"
+                      : ""
+                  }`}
                 >
                   <td className="px-3 py-2 align-top">
                     <input

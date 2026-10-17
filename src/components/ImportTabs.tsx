@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { ImportFocusProvider } from "@/components/import-focus";
 
 type ImportTab = "questions" | "links";
 
@@ -12,8 +13,25 @@ export function ImportTabs({
   links: ReactNode;
 }) {
   const [tab, setTab] = useState<ImportTab>("questions");
+  const [highlightedQuestionVersionId, setHighlightedQuestionVersionId] =
+    useState<string | null>(null);
+
+  function selectTab(next: ImportTab) {
+    setTab(next);
+    if (next === "links") {
+      setHighlightedQuestionVersionId(null);
+    }
+  }
+
+  function showQuestion(questionVersionId: string) {
+    setHighlightedQuestionVersionId(questionVersionId);
+    setTab("questions");
+  }
 
   return (
+    <ImportFocusProvider
+      value={{ highlightedQuestionVersionId, showQuestion }}
+    >
     <div className="mt-6">
       <div
         role="tablist"
@@ -25,14 +43,14 @@ export function ImportTabs({
           panelId="imports-questions-panel"
           current={tab}
           label="Questions"
-          onSelect={setTab}
+          onSelect={selectTab}
         />
         <TabButton
           id="links"
           panelId="imports-links-panel"
           current={tab}
           label="Links"
-          onSelect={setTab}
+          onSelect={selectTab}
         />
       </div>
       <div
@@ -54,6 +72,7 @@ export function ImportTabs({
         {links}
       </div>
     </div>
+    </ImportFocusProvider>
   );
 }
 
