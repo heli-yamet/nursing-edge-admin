@@ -435,7 +435,7 @@ export function ImportedQuestionsTable({
                       type="button"
                       aria-label={`Details for ${question.question_version_id}`}
                       onClick={() => setDetailVersionId(question.question_version_id)}
-                      className="inline-flex min-h-[32px] min-w-[40px] items-center justify-center rounded-[8px] px-2 text-base font-medium tracking-widest text-[#163A59] hover:text-[#0B7F86]"
+                      className="inline-flex items-center justify-center px-2 text-base font-medium tracking-widest text-[#163A59] hover:text-[#0B7F86]"
                     >
                       ...
                     </button>
