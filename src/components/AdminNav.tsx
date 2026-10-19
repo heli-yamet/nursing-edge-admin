@@ -11,8 +11,8 @@ export type AdminNavItem = (typeof ITEMS)[number][0];
 
 export function AdminNav({ current }: { current: AdminNavItem }) {
   return (
-    <header className="sticky top-0 z-10 border-b border-[#D9E1E5] bg-white">
-      <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2 sm:px-6">
+    <header className="sticky top-0 z-10 shrink-0 border-b border-[#D9E1E5] bg-white">
+      <div className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2 px-5 py-2 sm:px-6">
         <span className="text-lg font-semibold text-[#163A59]">
           Nursing Edge Admin
         </span>

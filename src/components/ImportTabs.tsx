@@ -32,33 +32,35 @@ export function ImportTabs({
     <ImportFocusProvider
       value={{ highlightedQuestionVersionId, showQuestion }}
     >
-    <div className="mt-6">
-      <div
-        role="tablist"
-        aria-label="Content imports"
-        className="flex flex-wrap gap-2"
-      >
-        <TabButton
-          id="questions"
-          panelId="imports-questions-panel"
-          current={tab}
-          label="Questions"
-          onSelect={selectTab}
-        />
-        <TabButton
-          id="links"
-          panelId="imports-links-panel"
-          current={tab}
-          label="Links"
-          onSelect={selectTab}
-        />
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="shrink-0 border-b border-[#D9E1E5]">
+        <div
+          role="tablist"
+          aria-label="Content imports"
+          className="-mb-px flex flex-wrap"
+        >
+          <TabButton
+            id="questions"
+            panelId="imports-questions-panel"
+            current={tab}
+            label="Questions"
+            onSelect={selectTab}
+          />
+          <TabButton
+            id="links"
+            panelId="imports-links-panel"
+            current={tab}
+            label="Links"
+            onSelect={selectTab}
+          />
+        </div>
       </div>
       <div
         id="imports-questions-panel"
         role="tabpanel"
         aria-labelledby="imports-tab-questions"
         hidden={tab !== "questions"}
-        className="mt-6"
+        className="min-h-0 flex-1 overflow-auto"
       >
         {questions}
       </div>
@@ -67,7 +69,7 @@ export function ImportTabs({
         role="tabpanel"
         aria-labelledby="imports-tab-links"
         hidden={tab !== "links"}
-        className="mt-6"
+        className="min-h-0 flex-1 overflow-auto"
       >
         {links}
       </div>
@@ -98,10 +100,10 @@ function TabButton({
       aria-selected={selected}
       aria-controls={panelId}
       onClick={() => onSelect(id)}
-      className={`inline-flex min-h-[40px] items-center rounded-[10px] border px-4 text-sm font-medium ${
+      className={`me-2 inline-flex items-center justify-center border-b-2 px-3 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-[#0B7F86] ${
         selected
-          ? "border-[#163A59] bg-[#163A59] text-white"
-          : "border-[#D9E1E5] bg-white text-[#163A59] hover:bg-[#F7F9FA]"
+          ? "border-[#0B7F86] text-[#0B7F86]"
+          : "border-transparent text-[#66727A] hover:border-[#0B7F86] hover:text-[#0B7F86]"
       }`}
     >
       {label}

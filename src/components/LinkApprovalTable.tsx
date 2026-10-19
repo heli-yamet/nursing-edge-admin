@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { FilterMenu } from "@/components/FilterMenu";
 import { useImportFocus } from "@/components/import-focus";
 import { adminFetch, readAdminToken } from "@/lib/admin-session";
 
@@ -209,7 +210,9 @@ export function LinkApprovalTable({
 
   return (
     <section>
-      <h2 className="text-xl font-semibold text-[#163A59]">Stored links</h2>
+      <h1 className="pt-6 text-xl font-semibold text-[#163A59]">
+        Imported links
+      </h1>
       <p className="mt-2 max-w-2xl text-base leading-7 text-[#24313A]">
         {links.length} stored {links.length === 1 ? "link" : "links"}. Clinical
         rows show map ids. Physiology rows show question versions. Approve
@@ -244,50 +247,8 @@ export function LinkApprovalTable({
           {message}
         </p>
       ) : null}
-      <div
-        className="mt-6 flex flex-wrap gap-2"
-        role="group"
-        aria-label="Show links by kind"
-      >
-        {KIND_FILTERS.map((option) => (
-          <button
-            key={option.id}
-            type="button"
-            aria-pressed={kind === option.id}
-            onClick={() => chooseKind(option.id)}
-            className={`inline-flex min-h-[40px] items-center rounded-[10px] border px-4 text-sm font-medium ${
-              kind === option.id
-                ? "border-[#163A59] bg-[#163A59] text-white"
-                : "border-[#D9E1E5] bg-white text-[#163A59] hover:bg-[#F7F9FA]"
-            }`}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
-      <div
-        className="mt-2 flex flex-wrap gap-2"
-        role="group"
-        aria-label="Show links by decision"
-      >
-        {DECISION_FILTERS.map((option) => (
-          <button
-            key={option.id}
-            type="button"
-            aria-pressed={decision === option.id}
-            onClick={() => chooseDecision(option.id)}
-            className={`inline-flex min-h-[40px] items-center rounded-[10px] border px-4 text-sm font-medium ${
-              decision === option.id
-                ? "border-[#163A59] bg-[#163A59] text-white"
-                : "border-[#D9E1E5] bg-white text-[#163A59] hover:bg-[#F7F9FA]"
-            }`}
-          >
-            {option.label}
-          </button>
-        ))}
-      </div>
-      <p className="mt-3 text-sm text-[#24313A]">{selected.length} selected</p>
-      <div className="mt-2 max-h-[480px] overflow-auto rounded-[10px] border border-[#D9E1E5] bg-white">
+      <p className="mt-6 text-sm text-[#24313A]">{selected.length} selected</p>
+      <div className="mt-2 rounded-[10px] border border-[#D9E1E5] bg-white">
         <table className="min-w-full text-left text-sm">
           <thead className="sticky top-0 bg-[#F7F9FA] text-[#163A59]">
             <tr>
@@ -306,12 +267,26 @@ export function LinkApprovalTable({
                   onChange={toggleAllVisible}
                 />
               </th>
-              <th className="px-3 py-2 font-medium">Kind</th>
+              <th className="px-3 py-2 font-medium">
+                <FilterMenu
+                  label="Kind"
+                  value={kind}
+                  options={KIND_FILTERS}
+                  onChange={chooseKind}
+                />
+              </th>
               <th className="px-3 py-2 font-medium">Link</th>
               <th className="px-3 py-2 font-medium">Revision</th>
               <th className="px-3 py-2 font-medium">From</th>
               <th className="px-3 py-2 font-medium">To</th>
-              <th className="px-3 py-2 font-medium">Status</th>
+              <th className="px-3 py-2 font-medium">
+                <FilterMenu
+                  label="Status"
+                  value={decision}
+                  options={DECISION_FILTERS}
+                  onChange={chooseDecision}
+                />
+              </th>
               <th className="px-3 py-2 font-medium">Admin</th>
               <th className="px-3 py-2 font-medium">Time</th>
             </tr>

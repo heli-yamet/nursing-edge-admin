@@ -86,14 +86,14 @@ export default async function ContentImportsPage() {
   const linksError = linkList.ok ? "" : "Links could not be loaded.";
 
   return (
-    <AdminShell current="imports">
-      <h1 className="text-[28px] leading-tight font-semibold text-[#163A59] sm:text-[32px]">
-        Content Imports
-      </h1>
+    <AdminShell current="imports" fill>
       <ImportTabs
         questions={
           <>
-            <p className="max-w-2xl text-base leading-7 text-[#24313A]">
+            <h1 className="pt-6 text-xl font-semibold text-[#163A59]">
+              Import questions
+            </h1>
+            <p className="mt-2 max-w-2xl text-base leading-7 text-[#24313A]">
               Upload a C2 workbook. Each question is validated and staged.
               Select staged versions to publish or delete, published versions
               to pause, or exactly 35 versions as the Calibration set. Learners

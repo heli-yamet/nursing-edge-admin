@@ -219,7 +219,7 @@ export function ContentImportForm() {
               })}
             </ul>
           ) : null}
-          <div className="mt-4 max-h-[480px] overflow-auto rounded-[10px] border border-[#D9E1E5] bg-white">
+          <div className="mt-4 rounded-[10px] border border-[#D9E1E5] bg-white">
             <table className="min-w-full text-left text-sm">
               <thead className="sticky top-0 bg-[#F7F9FA] text-[#163A59]">
                 <tr>

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useImportFocus } from "@/components/import-focus";
+import { FilterMenu } from "@/components/FilterMenu";
 import { QuestionDetailDialog } from "@/components/QuestionDetailDialog";
 import { adminFetch, readAdminToken } from "@/lib/admin-session";
 import { useEffect, useMemo, useState } from "react";
@@ -108,18 +109,6 @@ export function ImportedQuestionsTable({
         .map((question) => question.question_version_id),
     [questions],
   );
-  const counts = useMemo(() => {
-    const result: Record<StatusFilter, number> = {
-      ALL: questions.length,
-      STAGED: 0,
-      PUBLISHED: 0,
-      PAUSED: 0,
-    };
-    for (const question of questions) {
-      result[statusOf(question)] += 1;
-    }
-    return result;
-  }, [questions]);
   useEffect(() => {
     if (!highlighted) {
       return;
@@ -343,31 +332,10 @@ export function ImportedQuestionsTable({
           {message}
         </p>
       ) : null}
-      <div
-        className="mt-6 flex flex-wrap gap-2"
-        role="group"
-        aria-label="Show questions by status"
-      >
-        {FILTERS.map((option) => (
-          <button
-            key={option.id}
-            type="button"
-            aria-pressed={filter === option.id}
-            onClick={() => chooseFilter(option.id)}
-            className={`inline-flex min-h-[40px] items-center rounded-[10px] border px-4 text-sm font-medium ${
-              filter === option.id
-                ? "border-[#163A59] bg-[#163A59] text-white"
-                : "border-[#D9E1E5] bg-white text-[#163A59] hover:bg-[#F7F9FA]"
-            }`}
-          >
-            {option.label} ({counts[option.id]})
-          </button>
-        ))}
-      </div>
-      <p className="mt-3 text-sm text-[#24313A]">
+      <p className="mt-6 text-sm text-[#24313A]">
         {selected.length} selected
       </p>
-      <div className="mt-2 max-h-[480px] overflow-auto rounded-[10px] border border-[#D9E1E5] bg-white">
+      <div className="mt-2 rounded-[10px] border border-[#D9E1E5] bg-white">
         <table className="min-w-full text-left text-sm">
           <thead className="sticky top-0 bg-[#F7F9FA] text-[#163A59]">
             <tr>
@@ -390,7 +358,14 @@ export function ImportedQuestionsTable({
               <th className="px-3 py-2 font-medium">Permanent item</th>
               <th className="px-3 py-2 font-medium">Format</th>
               <th className="px-3 py-2 font-medium">Pool</th>
-              <th className="px-3 py-2 font-medium">Status</th>
+              <th className="px-3 py-2 font-medium">
+                <FilterMenu
+                  label="Status"
+                  value={filter}
+                  options={FILTERS}
+                  onChange={chooseFilter}
+                />
+              </th>
               <th className="px-3 py-2 font-medium">
                 <span className="sr-only">Details</span>
               </th>
