@@ -14,7 +14,7 @@ export function AdminShell({
     <>
       <AdminNav current={current} />
       <main
-        className={`mx-auto flex w-full max-w-[1120px] flex-1 flex-col px-5 pt-0 sm:px-6 ${
+        className={`mx-auto flex w-full max-w-[1120px] flex-1 flex-col px-5 pt-6 sm:px-6 ${
           fill ? "min-h-0 gap-6 overflow-hidden pb-6" : "pb-16"
         }`}
       >
