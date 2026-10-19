@@ -213,7 +213,7 @@ export function LinkApprovalTable({
       <h1 className="pt-6 text-xl font-semibold text-[#163A59]">
         Imported links
       </h1>
-      <p className="mt-2 max-w-2xl text-base leading-7 text-[#24313A]">
+      <p className="mt-2 text-base leading-7 text-[#24313A]">
         {links.length} stored {links.length === 1 ? "link" : "links"}. Clinical
         rows show map ids. Physiology rows show question versions. Approve
         records you, that revision, and the time. Ban clears that approval and
