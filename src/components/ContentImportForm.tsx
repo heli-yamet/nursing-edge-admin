@@ -24,11 +24,25 @@ type ImportBatch = {
   unchanged_count: number;
 };
 
+type DomainFailure = {
+  key: string;
+  error: string;
+};
+
 type DomainCounts = {
   passed: number;
   failed: number;
   unchanged: number;
+  failures?: DomainFailure[];
 };
+
+type FailureGroup = {
+  reason: string;
+  count: number;
+  keys: string[];
+};
+
+const FAILURE_EXAMPLES = 5;
 
 type ImportDomains = {
   content: DomainCounts;
@@ -102,6 +116,25 @@ async function readImportResponse(response: Response): Promise<ImportResponse> {
           : `The server answered with status ${response.status} and no import result.`,
     };
   }
+}
+
+/** Groups failures by sheet and reason. Ids inside a reason are masked so one cause shows once. */
+function groupFailures(failures: DomainFailure[]): FailureGroup[] {
+  const groups = new Map<string, FailureGroup>();
+  for (const failure of failures) {
+    const sheet = failure.key.split(" ")[0] ?? "";
+    const error = failure.error.startsWith(failure.key)
+      ? failure.error.slice(failure.key.length).trim()
+      : failure.error;
+    const reason = `${sheet}: ${error.replace(/\S*\d\S*/g, "…")}`;
+    const group = groups.get(reason) ?? { reason, count: 0, keys: [] };
+    group.count += 1;
+    if (group.keys.length < FAILURE_EXAMPLES) {
+      group.keys.push(failure.key);
+    }
+    groups.set(reason, group);
+  }
+  return [...groups.values()].sort((left, right) => right.count - left.count);
 }
 
 function outcomeLabel(outcome: ImportLine["outcome"]): string {
@@ -279,10 +312,31 @@ export function ContentImportForm() {
                 if (!counts) {
                   return null;
                 }
+                const failures = counts.failures ?? [];
                 return (
                   <li key={domain.key}>
                     {domain.label}: {counts.passed} passed, {counts.failed}{" "}
                     failed, {counts.unchanged} unchanged.
+                    {failures.length > 0 ? (
+                      <details className="mt-1">
+                        <summary className="cursor-pointer text-[#9B2C2C]">
+                          Why {failures.length} failed
+                        </summary>
+                        <ul className="mt-2 space-y-2 text-sm">
+                          {groupFailures(failures).map((group) => (
+                            <li key={group.reason}>
+                              <span className="text-[#9B2C2C]">
+                                {group.count} rows. {group.reason}
+                              </span>
+                              <span className="block font-mono text-xs text-[#66727A]">
+                                {group.keys.join(", ")}
+                                {group.count > group.keys.length ? ", …" : ""}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
+                    ) : null}
                   </li>
                 );
               })}
