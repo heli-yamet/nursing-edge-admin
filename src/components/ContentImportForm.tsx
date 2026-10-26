@@ -86,6 +86,24 @@ function contentImportBlobPath(fileName: string): string | null {
   return `content-imports/${base}`;
 }
 
+const IMPORT_STOPPED_MESSAGE =
+  "The server stopped before it answered, probably because the import ran past its time limit. Nothing was published. Rows saved before it stopped are staged and show as Unchanged when you import the same file again.";
+
+async function readImportResponse(response: Response): Promise<ImportResponse> {
+  const text = await response.text();
+  try {
+    return JSON.parse(text) as ImportResponse;
+  } catch {
+    return {
+      ok: false,
+      error:
+        response.status === 504
+          ? IMPORT_STOPPED_MESSAGE
+          : `The server answered with status ${response.status} and no import result.`,
+    };
+  }
+}
+
 function outcomeLabel(outcome: ImportLine["outcome"]): string {
   if (outcome === "PASSED") {
     return "Passed";
@@ -132,8 +150,9 @@ export function ContentImportForm() {
     setBusy(true);
     setMessage("");
     setResult(null);
+    let blob: { url: string; pathname: string };
     try {
-      const blob = await uploadPresigned(blobPath, file, {
+      blob = await uploadPresigned(blobPath, file, {
         access: "private",
         handleUploadUrl: adminApi("/api/admin/content-import-uploads"),
         headers: { Authorization: `Bearer ${readAdminToken()}` },
@@ -141,17 +160,33 @@ export function ContentImportForm() {
           file.type ||
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
-      const response = await adminFetch("/api/admin/content-imports", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url: blob.url,
-          pathname: blob.pathname,
-          fileName: file.name,
-          purpose,
-        }),
-      });
-      const payload = (await response.json()) as ImportResponse;
+    } catch (error) {
+      setMessage(
+        `The workbook did not upload, so nothing was imported. ${
+          error instanceof Error ? error.message : ""
+        }`.trim(),
+      );
+      setBusy(false);
+      return;
+    }
+    try {
+      let response: Response;
+      try {
+        response = await adminFetch("/api/admin/content-imports", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: blob.url,
+            pathname: blob.pathname,
+            fileName: file.name,
+            purpose,
+          }),
+        });
+      } catch {
+        setMessage(IMPORT_STOPPED_MESSAGE);
+        return;
+      }
+      const payload = await readImportResponse(response);
       if (!payload.ok || !payload.batch) {
         setMessage(payload.error ?? "Import failed.");
         return;
