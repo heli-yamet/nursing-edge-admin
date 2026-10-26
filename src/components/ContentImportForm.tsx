@@ -37,6 +37,13 @@ type ImportDomains = {
   runtime_binding: DomainCounts;
 };
 
+type WorkbookRole = {
+  role: "CLINICAL_CORE" | "CLINICAL_SIBLING_RESERVED" | "AP_REINFORCEMENT" | null;
+  basis: "AP_ITEMS" | "FILE_NAME" | "DEFAULT" | null;
+  bound: boolean;
+  warning: string | null;
+};
+
 type ImportResponse = {
   ok?: boolean;
   error?: string;
@@ -44,8 +51,25 @@ type ImportResponse = {
   batch?: ImportBatch;
   lines?: ImportLine[];
   domains?: ImportDomains;
+  workbook_role?: WorkbookRole;
   calibration?: { ok?: boolean; reason?: string | null };
 };
+
+function workbookRoleLabel(workbookRole: WorkbookRole): string {
+  if (!workbookRole.role) {
+    return "Role: none bound.";
+  }
+  if (!workbookRole.bound) {
+    return "Role: none bound. This workbook has content sheets only.";
+  }
+  if (workbookRole.role === "AP_REINFORCEMENT") {
+    return "Role: Physiology (AP), from the AP_ITEMS sheet. Barred from Practice.";
+  }
+  if (workbookRole.role === "CLINICAL_SIBLING_RESERVED") {
+    return "Role: Sibling, from the file name. Barred from Practice.";
+  }
+  return "Role: Clinical core. Check the file name if these are siblings.";
+}
 
 const DOMAIN_LABELS: { key: keyof ImportDomains; label: string }[] = [
   { key: "content", label: "Content" },
@@ -203,6 +227,16 @@ export function ContentImportForm() {
               ? " Saved as the Calibration set. Ordinary Practice will not use these 35."
               : ""}
           </p>
+          {result.workbook_role ? (
+            <p className="mt-2 text-base leading-7 text-[#24313A]">
+              {workbookRoleLabel(result.workbook_role)}
+            </p>
+          ) : null}
+          {result.workbook_role?.warning ? (
+            <p className="mt-2 text-base leading-7 text-[#9B2C2C]" role="alert">
+              {result.workbook_role.warning}
+            </p>
+          ) : null}
           {result.domains ? (
             <ul className="mt-4 space-y-2 text-base leading-7 text-[#24313A]">
               {DOMAIN_LABELS.map((domain) => {
