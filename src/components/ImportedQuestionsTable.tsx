@@ -15,6 +15,7 @@ type ImportedQuestion = {
   publication_status: "STAGED" | "PUBLISHED";
   active?: boolean;
   on_calibration_blueprint?: boolean;
+  calibration_question?: boolean;
   role?: string | null;
 };
 
@@ -61,7 +62,7 @@ function statusLabel(question: ImportedQuestion): string {
 }
 
 function poolLabel(question: ImportedQuestion): string {
-  if (question.on_calibration_blueprint) {
+  if (question.on_calibration_blueprint || question.calibration_question) {
     return "Calibration";
   }
   if (question.role === "AP_REINFORCEMENT") {

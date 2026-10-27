@@ -53,7 +53,7 @@ type ImportDomains = {
 
 type WorkbookRole = {
   role: "CLINICAL_CORE" | "CLINICAL_SIBLING_RESERVED" | "AP_REINFORCEMENT" | null;
-  basis: "AP_ITEMS" | "FILE_NAME" | "DEFAULT" | null;
+  basis: "AP_ITEMS" | "FILE_NAME" | "DEFAULT" | "CALIBRATION_UPLOAD" | null;
   bound: boolean;
   warning: string | null;
 };
@@ -70,6 +70,9 @@ type ImportResponse = {
 };
 
 function workbookRoleLabel(workbookRole: WorkbookRole): string {
+  if (workbookRole.basis === "CALIBRATION_UPLOAD") {
+    return "Calibration: no role. These questions stay out of Practice.";
+  }
   if (!workbookRole.role) {
     return "Role: none bound.";
   }
