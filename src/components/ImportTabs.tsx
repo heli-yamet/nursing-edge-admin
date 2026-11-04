@@ -3,14 +3,16 @@
 import { useState, type ReactNode } from "react";
 import { ImportFocusProvider } from "@/components/import-focus";
 
-type ImportTab = "questions" | "links";
+type ImportTab = "questions" | "links" | "teaching";
 
 export function ImportTabs({
   questions,
   links,
+  teaching,
 }: {
   questions: ReactNode;
   links: ReactNode;
+  teaching: ReactNode;
 }) {
   const [tab, setTab] = useState<ImportTab>("questions");
   const [highlightedQuestionVersionId, setHighlightedQuestionVersionId] =
@@ -18,7 +20,7 @@ export function ImportTabs({
 
   function selectTab(next: ImportTab) {
     setTab(next);
-    if (next === "links") {
+    if (next === "links" || next === "teaching") {
       setHighlightedQuestionVersionId(null);
     }
   }
@@ -53,6 +55,13 @@ export function ImportTabs({
             label="Links"
             onSelect={selectTab}
           />
+          <TabButton
+            id="teaching"
+            panelId="imports-teaching-panel"
+            current={tab}
+            label="Teaching"
+            onSelect={selectTab}
+          />
         </div>
       </div>
       <div
@@ -72,6 +81,15 @@ export function ImportTabs({
         className="min-h-0 flex-1 overflow-auto"
       >
         {links}
+      </div>
+      <div
+        id="imports-teaching-panel"
+        role="tabpanel"
+        aria-labelledby="imports-tab-teaching"
+        hidden={tab !== "teaching"}
+        className="min-h-0 flex-1 overflow-auto"
+      >
+        {teaching}
       </div>
     </div>
     </ImportFocusProvider>

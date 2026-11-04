@@ -23,10 +23,46 @@ type LinkedQuestion = DetailQuestion & {
   link_revision: number;
 };
 
+type VersionHistoryRow = {
+  question_version_id: string;
+  publication_status: "STAGED" | "PUBLISHED";
+  active: boolean;
+  current: boolean;
+};
+
+type QuestionAdminMeta = {
+  question_version_id: string;
+  question_id: string;
+  format: string;
+  runtime_role: string | null;
+  publication_status: "STAGED" | "PUBLISHED";
+  active: boolean;
+  version_history: VersionHistoryRow[];
+};
+
+type OptionSelectionRow = {
+  selected_option_ids: string[];
+  count: number;
+  rate: number | null;
+  rate_label: string | null;
+};
+
+type QuestionUsage = {
+  answered: number;
+  correct: number;
+  incorrect: number;
+  accuracy: number | null;
+  confidence: Record<string, number>;
+  six_state: Record<string, number>;
+  option_selections: OptionSelectionRow[];
+};
+
 type QuestionDetail = {
   original: DetailQuestion[];
   clinical: LinkedQuestion[];
   physiology: LinkedQuestion[];
+  meta?: QuestionAdminMeta;
+  usage?: QuestionUsage;
 };
 
 export function QuestionDetailDialog({
@@ -133,6 +169,60 @@ export function QuestionDetailDialog({
         ) : null}
         {detail ? (
           <div className="mt-6">
+            {detail.meta ? (
+              <DetailSection title="Identity and publication">
+                <dl className="grid gap-2 text-sm text-[#24313A] sm:grid-cols-2">
+                  <div>
+                    <dt className="font-medium text-[#163A59]">Permanent item</dt>
+                    <dd className="font-mono text-xs">{detail.meta.question_id}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-[#163A59]">Question version</dt>
+                    <dd className="font-mono text-xs">
+                      {detail.meta.question_version_id}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-[#163A59]">Format</dt>
+                    <dd>{detail.meta.format}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-[#163A59]">Runtime role</dt>
+                    <dd>{runtimeRoleLabel(detail.meta.runtime_role)}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-medium text-[#163A59]">Publication</dt>
+                    <dd>{publicationLabel(detail.meta)}</dd>
+                  </div>
+                </dl>
+                {detail.meta.version_history.length > 1 ? (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium text-[#163A59]">
+                      Version history
+                    </p>
+                    <ul className="mt-2 space-y-1 font-mono text-xs text-[#24313A]">
+                      {detail.meta.version_history.map((row) => (
+                        <li key={row.question_version_id}>
+                          {row.question_version_id}
+                          {row.current ? " · opened" : ""}
+                          {" · "}
+                          {row.publication_status === "PUBLISHED"
+                            ? row.active
+                              ? "Published"
+                              : "Paused"
+                            : "Staged"}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </DetailSection>
+            ) : null}
+            {detail.usage ? (
+              <DetailSection title="Learner usage (read-only)">
+                <UsageSummary usage={detail.usage} />
+              </DetailSection>
+            ) : null}
             <DetailSection title="Original question">
               {detail.original.length === 0 ? (
                 <p className="text-base leading-7 text-[#24313A]">
@@ -203,6 +293,82 @@ function LinkedQuestions({
           <QuestionBlock question={question} />
         </div>
       ))}
+    </div>
+  );
+}
+
+function runtimeRoleLabel(role: string | null): string {
+  if (role === "AP_REINFORCEMENT") {
+    return "Physiology (AP reinforcement)";
+  }
+  if (role === "CLINICAL_SIBLING_RESERVED") {
+    return "Clinical sibling (reserved)";
+  }
+  if (role === "CLINICAL_CORE") {
+    return "Clinical core (Practice)";
+  }
+  return role ?? "Practice-eligible (no role row)";
+}
+
+function publicationLabel(meta: QuestionAdminMeta): string {
+  if (meta.publication_status === "STAGED") {
+    return "Staged";
+  }
+  return meta.active ? "Published" : "Paused";
+}
+
+function formatAccuracy(value: number | null): string {
+  if (value === null) {
+    return "—";
+  }
+  return `${Math.round(value * 100)}%`;
+}
+
+function UsageSummary({ usage }: { usage: QuestionUsage }) {
+  if (usage.answered === 0) {
+    return (
+      <p className="text-base leading-7 text-[#24313A]">
+        No committed attempts on this version yet.
+      </p>
+    );
+  }
+  return (
+    <div className="space-y-4 text-sm text-[#24313A]">
+      <p>
+        {usage.answered} answered · {usage.correct} correct · accuracy{" "}
+        {formatAccuracy(usage.accuracy)} ({usage.correct}/{usage.answered})
+      </p>
+      <div>
+        <p className="font-medium text-[#163A59]">Confidence</p>
+        <ul className="mt-1 list-disc pl-5">
+          <li>Unsure: {usage.confidence.UNSURE ?? 0}</li>
+          <li>Sure: {usage.confidence.SURE ?? 0}</li>
+          <li>Confident: {usage.confidence.CONFIDENT ?? 0}</li>
+        </ul>
+      </div>
+      <div>
+        <p className="font-medium text-[#163A59]">Six-state</p>
+        <ul className="mt-1 grid gap-1 sm:grid-cols-2">
+          {Object.entries(usage.six_state).map(([state, count]) => (
+            <li key={state}>
+              {state}: {count}
+            </li>
+          ))}
+        </ul>
+      </div>
+      {usage.option_selections.length > 0 ? (
+        <div>
+          <p className="font-medium text-[#163A59]">Option selections</p>
+          <ul className="mt-2 space-y-2">
+            {usage.option_selections.map((row) => (
+              <li key={row.selected_option_ids.join(",")} className="font-mono text-xs">
+                {row.selected_option_ids.join(", ") || "(none)"} · {row.count}
+                {row.rate_label ? ` · ${row.rate_label}` : ""}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </div>
   );
 }

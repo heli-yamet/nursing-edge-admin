@@ -9,6 +9,10 @@ import {
   LinkApprovalTable,
   type AdminLinkRow,
 } from "@/components/LinkApprovalTable";
+import {
+  TeachingApprovalTable,
+  type AdminTeachingRow,
+} from "@/components/TeachingApprovalTable";
 import { PriorBatches } from "@/components/PriorBatches";
 import { adminApi } from "@/lib/site";
 
@@ -61,12 +65,16 @@ export default async function ContentImportsPage() {
   }
 
   const headers = { Authorization: `Bearer ${token}` };
-  const [listResponse, linksResponse] = await Promise.all([
+  const [listResponse, linksResponse, teachingResponse] = await Promise.all([
     fetch(adminApi("/api/admin/content-imports"), {
       headers,
       cache: "no-store",
     }),
     fetch(adminApi("/api/admin/link-decisions"), {
+      headers,
+      cache: "no-store",
+    }),
+    fetch(adminApi("/api/admin/teaching-decisions"), {
       headers,
       cache: "no-store",
     }),
@@ -85,6 +93,16 @@ export default async function ContentImportsPage() {
   const eligibility = list.ok ? (list.eligibility ?? null) : null;
   const links = linkList.ok ? (linkList.links ?? []) : [];
   const linksError = linkList.ok ? "" : "Links could not be loaded.";
+  const teachingList = teachingResponse.ok
+    ? ((await teachingResponse.json()) as {
+        ok?: boolean;
+        teachings?: AdminTeachingRow[];
+      })
+    : { ok: false, teachings: [] as AdminTeachingRow[] };
+  const teachings = teachingList.ok ? (teachingList.teachings ?? []) : [];
+  const teachingError = teachingList.ok
+    ? ""
+    : "Teaching rows could not be loaded.";
 
   return (
     <AdminShell current="imports" fill>
@@ -107,6 +125,12 @@ export default async function ContentImportsPage() {
           </>
         }
         links={<LinkApprovalTable links={links} loadError={linksError} />}
+        teaching={
+          <TeachingApprovalTable
+            teachings={teachings}
+            loadError={teachingError}
+          />
+        }
       />
     </AdminShell>
   );
