@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
+import { OverviewCards } from "@/components/OverviewCards";
 import { adminApi } from "@/lib/site";
 
 export default async function DashboardPage() {
@@ -10,11 +11,18 @@ export default async function DashboardPage() {
     redirect("/signin");
   }
 
-  const response = await fetch(adminApi("/api/admin/me"), {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: "no-store",
-  });
-  const data = (await response.json()) as {
+  const [meResponse, overviewResponse] = await Promise.all([
+    fetch(adminApi("/api/admin/me"), {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    }),
+    fetch(adminApi("/api/admin/overview"), {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    }),
+  ]);
+
+  const data = (await meResponse.json()) as {
     ok?: boolean;
     admin?: { email: string; role: string };
   };
@@ -22,6 +30,11 @@ export default async function DashboardPage() {
   if (!data.ok || !data.admin) {
     redirect("/signin");
   }
+
+  const overviewData = (await overviewResponse.json()) as {
+    ok?: boolean;
+    overview?: Parameters<typeof OverviewCards>[0]["overview"];
+  };
 
   const admin = data.admin;
 
@@ -31,15 +44,32 @@ export default async function DashboardPage() {
         {admin.role === "SUPER_ADMIN" ? "Super Admin" : "Admin"}
       </p>
       <h1 className="mt-2 text-[28px] leading-tight font-semibold text-[#163A59] sm:text-[32px]">
-        Dashboard
+        Overview
       </h1>
       <p className="mt-4 text-base leading-7 text-[#24313A]">
         Signed in as {admin.email}.
       </p>
-      <div className="mt-6 flex flex-wrap gap-3">
+
+      {overviewData.ok && overviewData.overview ? (
+        <div className="mt-8">
+          <OverviewCards overview={overviewData.overview} />
+        </div>
+      ) : (
+        <p className="mt-6 text-base text-[#B42318]">
+          Overview counts could not be loaded.
+        </p>
+      )}
+
+      <div className="mt-10 flex flex-wrap gap-3">
+        <Link
+          href="/learning-evidence"
+          className="inline-flex min-h-[48px] items-center rounded-[10px] bg-[#0B7F86] px-5 text-base font-medium text-white hover:bg-[#08666C]"
+        >
+          Learning Evidence
+        </Link>
         <Link
           href="/access"
-          className="inline-flex min-h-[48px] items-center rounded-[10px] bg-[#0B7F86] px-5 text-base font-medium text-white hover:bg-[#08666C]"
+          className="inline-flex min-h-[48px] items-center rounded-[10px] border border-[#D9E1E5] bg-white px-5 text-base font-medium text-[#163A59]"
         >
           Manual access
         </Link>
@@ -50,10 +80,6 @@ export default async function DashboardPage() {
           Content Imports
         </Link>
       </div>
-      <p className="mt-4 text-base leading-7 text-[#66727A]">
-        Other console views are not built yet. Publish is not available on this
-        screen.
-      </p>
     </AdminShell>
   );
 }

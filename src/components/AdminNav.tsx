@@ -2,7 +2,8 @@ import Link from "next/link";
 import { SignOutButton } from "@/components/SignOutButton";
 
 const ITEMS = [
-  ["dashboard", "/dashboard", "Dashboard"],
+  ["dashboard", "/dashboard", "Overview"],
+  ["evidence", "/learning-evidence", "Learning Evidence"],
   ["access", "/access", "Manual access"],
   ["learners", "/learners", "Learners"],
   ["imports", "/imports", "Content Imports"],
