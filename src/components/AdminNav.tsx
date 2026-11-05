@@ -4,6 +4,7 @@ import { SignOutButton } from "@/components/SignOutButton";
 const ITEMS = [
   ["dashboard", "/dashboard", "Dashboard"],
   ["access", "/access", "Manual access"],
+  ["learners", "/learners", "Learners"],
   ["imports", "/imports", "Content Imports"],
 ] as const;
 
