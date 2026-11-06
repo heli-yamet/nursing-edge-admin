@@ -68,6 +68,12 @@ export default async function DashboardPage() {
           Learning Evidence
         </Link>
         <Link
+          href="/audit"
+          className="inline-flex min-h-[48px] items-center rounded-[10px] border border-[#D9E1E5] bg-white px-5 text-base font-medium text-[#163A59]"
+        >
+          Audit
+        </Link>
+        <Link
           href="/access"
           className="inline-flex min-h-[48px] items-center rounded-[10px] border border-[#D9E1E5] bg-white px-5 text-base font-medium text-[#163A59]"
         >
