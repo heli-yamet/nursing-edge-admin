@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AdminNav, type AdminNavItem } from "@/components/AdminNav";
+import { DatabaseJobOverlay } from "@/components/DatabaseJobOverlay";
 
 export function AdminShell({
   current,
@@ -20,6 +21,7 @@ export function AdminShell({
       >
         {children}
       </main>
+      <DatabaseJobOverlay />
     </>
   );
   if (!fill) {

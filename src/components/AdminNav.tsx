@@ -8,6 +8,7 @@ const ITEMS = [
   ["learners", "/learners", "Learners"],
   ["audit", "/audit", "Audit"],
   ["imports", "/imports", "Content Imports"],
+  ["database", "/database", "Database"],
 ] as const;
 
 export type AdminNavItem = (typeof ITEMS)[number][0];
