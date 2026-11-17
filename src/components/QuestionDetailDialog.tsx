@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
 import { adminFetch } from "@/lib/admin-session";
+import { useDialogFocus } from "@/lib/dialog-focus";
 
 type DetailOption = {
   option_id: string;
@@ -68,12 +69,22 @@ type QuestionDetail = {
 export function QuestionDetailDialog({
   questionVersionId,
   onClose,
+  returnFocusRef,
 }: {
   questionVersionId: string | null;
   onClose: () => void;
+  returnFocusRef?: RefObject<HTMLElement | null>;
 }) {
+  const panelRef = useRef<HTMLDivElement>(null);
   const [detail, setDetail] = useState<QuestionDetail | null>(null);
   const [error, setError] = useState("");
+
+  useDialogFocus({
+    active: questionVersionId !== null,
+    panelRef,
+    onClose,
+    returnFocusRef,
+  });
 
   useEffect(() => {
     if (!questionVersionId) {
@@ -113,19 +124,6 @@ export function QuestionDetailDialog({
     };
   }, [questionVersionId]);
 
-  useEffect(() => {
-    if (!questionVersionId) {
-      return;
-    }
-    function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [questionVersionId, onClose]);
-
   if (!questionVersionId) {
     return null;
   }
@@ -136,6 +134,7 @@ export function QuestionDetailDialog({
       onClick={onClose}
     >
       <div
+        ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="question-detail-title"
@@ -152,7 +151,7 @@ export function QuestionDetailDialog({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex min-h-[40px] items-center rounded-[10px] border border-[#D9E1E5] px-4 text-sm font-medium text-[#163A59] hover:bg-[#F7F9FA]"
+            className="inline-flex min-h-[48px] items-center rounded-[10px] border border-[#D9E1E5] px-4 text-sm font-medium text-[#163A59] hover:bg-[#F7F9FA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B7F86]"
           >
             Close
           </button>

@@ -29,7 +29,7 @@ export function AdminNav({ current }: { current: AdminNavItem }) {
                   key={id}
                   href={href}
                   aria-current={active ? "page" : undefined}
-                  className={`inline-flex min-h-[48px] items-center justify-center rounded-[10px] border-b-2 px-3 text-base font-medium ${
+                  className={`inline-flex min-h-[48px] items-center justify-center rounded-[10px] border-b-2 px-3 text-base font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B7F86] ${
                     active
                       ? "border-[#0B7F86] bg-[#E8F5F5] font-semibold text-[#08666C]"
                       : "border-transparent text-[#163A59] hover:bg-[#F7F9FA]"

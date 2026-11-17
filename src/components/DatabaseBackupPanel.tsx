@@ -1,8 +1,9 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { adminFetch } from "@/lib/admin-session";
+import { useDialogFocus } from "@/lib/dialog-focus";
 
 type BackupRow = {
   backup_name: string;
@@ -290,9 +291,22 @@ function Modal({
   onClose: () => void;
   children: ReactNode;
 }) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  useDialogFocus({ active: true, panelRef, onClose });
+
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#163A59]/40 px-4">
-      <div className="w-full max-w-lg rounded-xl border border-[#D9E1E5] bg-white p-6 shadow-lg">
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-[#163A59]/40 px-4"
+      onClick={onClose}
+    >
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="database-modal-title"
+        className="w-full max-w-lg rounded-xl border border-[#D9E1E5] bg-white p-6 shadow-lg"
+        onClick={(event) => event.stopPropagation()}
+      >
         <ModalHeader title={title} onClose={onClose} />
         {children}
       </div>
@@ -339,11 +353,13 @@ function ModalActions({
 function ModalHeader({ title, onClose }: { title: string; onClose: () => void }) {
   return (
     <div className="mb-4 flex items-start justify-between gap-3">
-      <h2 className="text-lg font-semibold text-[#163A59]">{title}</h2>
+      <h2 id="database-modal-title" className="text-lg font-semibold text-[#163A59]">
+        {title}
+      </h2>
       <button
         type="button"
         aria-label="Close"
-        className="text-[#4A5F73]"
+        className="inline-flex min-h-[48px] min-w-[48px] items-center justify-center rounded-[10px] text-xl text-[#4A5F73] hover:bg-[#F7F9FA] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B7F86]"
         onClick={onClose}
       >
         ×

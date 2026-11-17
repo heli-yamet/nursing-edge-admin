@@ -38,7 +38,7 @@ function QuestionJump({
   return (
     <button
       type="button"
-      className="font-mono text-xs underline decoration-[#163A59] underline-offset-2 hover:text-[#0B7F86]"
+      className="rounded-[8px] font-mono text-xs underline decoration-[#163A59] underline-offset-2 hover:text-[#0B7F86] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B7F86]"
       onClick={() => focus.showQuestion(questionVersionId)}
     >
       {questionVersionId}

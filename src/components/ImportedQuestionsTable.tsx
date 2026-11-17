@@ -5,7 +5,7 @@ import { useImportFocus } from "@/components/import-focus";
 import { FilterMenu } from "@/components/FilterMenu";
 import { QuestionDetailDialog } from "@/components/QuestionDetailDialog";
 import { adminFetch, readAdminToken } from "@/lib/admin-session";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type ImportedQuestion = {
   question_id: string;
@@ -88,6 +88,7 @@ export function ImportedQuestionsTable({
   const [message, setMessage] = useState("");
   const [lines, setLines] = useState<ActionLine[]>([]);
   const [detailVersionId, setDetailVersionId] = useState<string | null>(null);
+  const detailOpenerRef = useRef<HTMLButtonElement | null>(null);
 
   const stagedIds = useMemo(
     () =>
@@ -338,7 +339,7 @@ export function ImportedQuestionsTable({
       </p>
       <div className="mt-2 rounded-[10px] border border-[#D9E1E5] bg-white">
         <table className="min-w-full text-left text-sm">
-          <thead className="sticky top-0 bg-[#F7F9FA] text-[#163A59]">
+          <thead className="sticky top-0 z-[1] bg-[#F7F9FA] text-[#163A59]">
             <tr>
               <th className="px-3 py-2 font-medium">
                 <input
@@ -410,8 +411,11 @@ export function ImportedQuestionsTable({
                     <button
                       type="button"
                       aria-label={`Details for ${question.question_version_id}`}
-                      onClick={() => setDetailVersionId(question.question_version_id)}
-                      className="inline-flex items-center justify-center px-2 text-base font-medium tracking-widest text-[#163A59] hover:text-[#0B7F86]"
+                      onClick={(event) => {
+                        detailOpenerRef.current = event.currentTarget;
+                        setDetailVersionId(question.question_version_id);
+                      }}
+                      className="inline-flex min-h-[48px] min-w-[48px] items-center justify-center rounded-[10px] px-2 text-base font-medium tracking-widest text-[#163A59] hover:text-[#0B7F86] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B7F86]"
                     >
                       ...
                     </button>
@@ -425,6 +429,7 @@ export function ImportedQuestionsTable({
       <QuestionDetailDialog
         questionVersionId={detailVersionId}
         onClose={() => setDetailVersionId(null)}
+        returnFocusRef={detailOpenerRef}
       />
     </section>
   );

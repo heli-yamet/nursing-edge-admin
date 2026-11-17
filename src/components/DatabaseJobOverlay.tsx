@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { adminFetch } from "@/lib/admin-session";
+import { useDialogFocus } from "@/lib/dialog-focus";
 
 type Job = {
   job_id: string;
@@ -14,6 +15,7 @@ type Job = {
 };
 
 export function DatabaseJobOverlay() {
+  const panelRef = useRef<HTMLDivElement>(null);
   const [job, setJob] = useState<Job | null>(null);
   const [visible, setVisible] = useState(false);
   const advancing = useRef(false);
@@ -93,6 +95,14 @@ export function DatabaseJobOverlay() {
     publishJob(null);
   };
 
+  const jobStillRunning = visible && job?.status === "running";
+
+  useDialogFocus({
+    active: visible && job !== null,
+    panelRef,
+    onClose: jobStillRunning ? () => undefined : close,
+  });
+
   if (!visible || !job) {
     return null;
   }
@@ -107,7 +117,10 @@ export function DatabaseJobOverlay() {
       aria-modal="true"
       aria-labelledby="database-job-title"
     >
-      <div className="w-full max-w-md rounded-xl border border-[#D9E1E5] bg-white p-6 shadow-lg">
+      <div
+        ref={panelRef}
+        className="w-full max-w-md rounded-xl border border-[#D9E1E5] bg-white p-6 shadow-lg"
+      >
         <h2 id="database-job-title" className="text-lg font-semibold text-[#163A59]">
           {title}
         </h2>
