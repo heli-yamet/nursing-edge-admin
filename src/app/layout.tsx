@@ -8,7 +8,10 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Admin · Nursing Edge",
+  title: {
+    default: "Admin · Nursing Edge",
+    template: "%s · Admin · Nursing Edge",
+  },
   description: "Nursing Edge Product Owner admin console",
 };
 

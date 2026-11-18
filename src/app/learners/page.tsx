@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { LearnersPanel } from "@/components/LearnersPanel";
 import { adminApi } from "@/lib/site";
+
+export const metadata: Metadata = {
+  title: "Learners",
+};
 
 export default async function LearnersPage() {
   const token = (await cookies()).get("admin_token")?.value;

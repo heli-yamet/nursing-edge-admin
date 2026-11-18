@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { OverviewCards } from "@/components/OverviewCards";
 import { adminApi } from "@/lib/site";
+
+export const metadata: Metadata = {
+  title: "Overview",
+};
 
 export default async function DashboardPage() {
   const token = (await cookies()).get("admin_token")?.value;

@@ -192,8 +192,13 @@ export function AuditPanel({ operator }: { operator: boolean }) {
         )}
       </section>
 
-      <section className="rounded-[16px] border border-[#D9E1E5] bg-white p-5">
-        <h2 className="text-lg font-semibold text-[#163A59]">Filters</h2>
+      <section
+        className="rounded-[16px] border border-[#D9E1E5] bg-white p-5"
+        aria-labelledby="audit-filters-heading"
+      >
+        <h2 id="audit-filters-heading" className="text-lg font-semibold text-[#163A59]">
+          Filters
+        </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <label className="flex flex-col gap-1 text-sm text-[#24313A]">
             Actor
@@ -259,6 +264,8 @@ export function AuditPanel({ operator }: { operator: boolean }) {
           type="button"
           onClick={() => void load()}
           disabled={busy}
+          aria-busy={busy}
+          aria-label="Apply audit filters"
           className="mt-4 inline-flex min-h-[48px] items-center rounded-[10px] bg-[#0B7F86] px-5 text-base font-medium text-white hover:bg-[#08666C] disabled:opacity-60"
         >
           {busy ? "Loading…" : "Apply filters"}

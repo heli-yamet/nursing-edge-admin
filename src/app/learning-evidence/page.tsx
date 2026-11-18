@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { LearningEvidencePanel } from "@/components/LearningEvidencePanel";
+
+export const metadata: Metadata = {
+  title: "Learning evidence",
+};
 
 export default async function LearningEvidencePage() {
   const token = (await cookies()).get("admin_token")?.value;

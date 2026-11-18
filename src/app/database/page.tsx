@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { DatabaseBackupPanel } from "@/components/DatabaseBackupPanel";
 import { adminApi } from "@/lib/site";
+
+export const metadata: Metadata = {
+  title: "Database",
+};
 
 export default async function DatabasePage() {
   const token = (await cookies()).get("admin_token")?.value;

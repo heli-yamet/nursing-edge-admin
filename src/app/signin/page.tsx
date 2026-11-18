@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
 import { AdminAuthForm } from "@/components/AdminAuthForm";
+
+export const metadata: Metadata = {
+  title: "Sign in",
+};
 
 export default function SignInPage() {
   return (

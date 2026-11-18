@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
@@ -15,6 +16,10 @@ import {
 } from "@/components/TeachingApprovalTable";
 import { PriorBatches } from "@/components/PriorBatches";
 import { adminApi } from "@/lib/site";
+
+export const metadata: Metadata = {
+  title: "Content imports",
+};
 
 type ImportBatch = {
   batch_id: string;

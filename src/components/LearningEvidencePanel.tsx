@@ -155,8 +155,13 @@ export function LearningEvidencePanel() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="rounded-[16px] border border-[#D9E1E5] bg-white p-5">
-        <h2 className="text-lg font-semibold text-[#163A59]">Filters</h2>
+      <section
+        className="rounded-[16px] border border-[#D9E1E5] bg-white p-5"
+        aria-labelledby="evidence-filters-heading"
+      >
+        <h2 id="evidence-filters-heading" className="text-lg font-semibold text-[#163A59]">
+          Filters
+        </h2>
         <p className="mt-2 text-sm leading-6 text-[#5C6B74]">
           Read-only view of committed attempts. Accuracy uses the same N/D
           formula as learner Results and Progress. Clinical and physiology
@@ -271,6 +276,8 @@ export function LearningEvidencePanel() {
         <button
           type="button"
           disabled={busy}
+          aria-busy={busy}
+          aria-label="Apply learning evidence filters"
           onClick={() => void load()}
           className="mt-4 inline-flex min-h-[48px] items-center rounded-[10px] bg-[#0B7F86] px-5 text-base font-medium text-white hover:bg-[#08666C] disabled:opacity-60"
         >

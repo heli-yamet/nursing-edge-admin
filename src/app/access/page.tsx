@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
@@ -26,6 +27,10 @@ function whenLabel(value: string | undefined): string {
   }
   return date.toLocaleString();
 }
+
+export const metadata: Metadata = {
+  title: "Access grants",
+};
 
 export default async function ManualAccessPage() {
   const token = (await cookies()).get("admin_token")?.value;

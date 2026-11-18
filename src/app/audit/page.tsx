@@ -1,8 +1,13 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/AdminShell";
 import { AuditPanel } from "@/components/AuditPanel";
 import { adminApi } from "@/lib/site";
+
+export const metadata: Metadata = {
+  title: "Audit",
+};
 
 export default async function AuditPage() {
   const token = (await cookies()).get("admin_token")?.value;
