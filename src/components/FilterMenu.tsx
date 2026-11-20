@@ -82,7 +82,7 @@ export function FilterMenu<T extends string>({
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
         onClick={() => setOpen((currentOpen) => !currentOpen)}
-        className="inline-flex min-h-[32px] items-center gap-2 rounded-[8px] border border-[#D9E1E5] bg-white px-2.5 text-sm font-medium text-[#163A59] hover:border-[#0B7F86] focus-visible:outline-2 focus-visible:outline-[#0B7F86]"
+        className="inline-flex min-h-[48px] items-center gap-2 rounded-[8px] border border-[#D9E1E5] bg-white px-2.5 text-sm font-medium text-[#163A59] hover:border-[#0B7F86] focus-visible:outline-2 focus-visible:outline-[#0B7F86]"
       >
         {current}
         <Chevron open={open} />
@@ -109,7 +109,7 @@ export function FilterMenu<T extends string>({
                       onChange(option.id);
                       setOpen(false);
                     }}
-                    className={`flex w-full items-center px-3 py-2 text-left text-sm ${
+                    className={`flex min-h-[48px] w-full items-center px-3 py-2 text-left text-sm ${
                       selected
                         ? "bg-[#E8F5F5] font-medium text-[#08666C]"
                         : "text-[#163A59] hover:bg-[#F7F9FA]"

@@ -271,7 +271,7 @@ export function ContentImportForm() {
             name="purpose"
             value="calibration"
             disabled={busy}
-            className="inline-flex min-h-[48px] items-center rounded-[10px] border border-[#0B7F86] bg-white px-5 text-base font-medium text-[#0B7F86] hover:bg-[#F7F9FA] disabled:opacity-60"
+            className="inline-flex min-h-[48px] items-center rounded-[10px] border border-[#08666C] bg-white px-5 text-base font-medium text-[#08666C] hover:bg-[#F7F9FA] disabled:opacity-60"
           >
             {busy ? "Importing…" : "Upload as Calibration"}
           </button>
